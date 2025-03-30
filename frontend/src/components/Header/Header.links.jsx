@@ -14,7 +14,7 @@ const HeaderLinks = ({ divider, closeDrawer }) => {
             <Link onClick={closeDrawer} to="/" className={styles.navLink}>
                 <Button className={styles.button}>
                     <Home className={styles.icons} />
-                    <span className={styles.items}>Home</span>
+                    <span className={styles.items}>Inicio</span>
                 </Button>
             </Link>
             {divider && <Divider className={styles.divider} />}
@@ -23,7 +23,7 @@ const HeaderLinks = ({ divider, closeDrawer }) => {
             <Link onClick={closeDrawer} to="/experiments/experimentchooser" className={styles.navLink}>
                 <Button className={styles.button}>
                     <LocalHospital className={styles.icons} />
-                    <span className={styles.items}>Experiment</span>
+                    <span className={styles.items}>Regístrate</span>
                 </Button>
             </Link>
             {divider && <Divider className={styles.divider} />}

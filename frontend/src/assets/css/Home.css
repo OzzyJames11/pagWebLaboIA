@@ -1,0 +1,78 @@
+.home {
+    padding: 20px;
+    background-color: #0B0019; /* Fondo oscuro en lugar de blanco */
+    color: #ffffff; /* Texto en blanco en lugar de negro */
+    position: relative;
+}
+
+.background-image {
+    position: relative;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    height: 500px;
+    overflow: hidden;
+}
+
+.background-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 100%;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.522); /* Morado oscuro semitransparente */
+}
+
+.text-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 100%;
+    z-index: 1;
+}
+
+.title-text {
+    color: #9B2EF4 !important; /* Título en morado brillante */
+    font-size: 3rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center !important;
+}
+
+.subtitle-text {
+    color: #c0a8ff !important; /* Subtítulo en morado claro */
+    font-size: 1.3rem;
+    font-weight: 300;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center !important;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.map-container {
+    border: 1px solid #9B2EF4; /* Borde en morado brillante */
+    border-radius: 8px;
+    overflow: hidden;
+    height: 300px;
+}
+
+.list-container {
+    border: 1px solid #9B2EF4; /* Borde en morado brillante */
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #44000b; /* Fondo morado oscuro */
+}

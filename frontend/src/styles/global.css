@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Reset básico para eliminar márgenes y paddings predeterminados */
+
+body {
+  background-color: #0B0019; /* Fondo principal */
+  color: #ffffff; /* Texto en blanco */
+  font-family: 'Poppins', Arial, sans-serif;
+}
+
+nav {
+  background-color: #1E0044; /* Fondo de la barra de navegación */
+  padding: 1rem;
+}
+
+nav a {
+  color: #ffffff;
+}
+
+nav a:hover {
+  color: #9B2EF4; /* Color morado brillante para resaltar */
+}
+
+button {
+  background-color: #9B2EF4; /* Botón morado brillante */
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #7500c4; /* Un poco más oscuro */
+}

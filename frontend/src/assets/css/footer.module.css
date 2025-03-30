@@ -3,7 +3,7 @@
   width: 100%; /* Ocupa todo el ancho */
   padding: 1rem 0; /* Reducimos el padding vertical */
   color: #FFF;
-  background-color: #001f3e;
+  background-color: #18052F;
   position: relative; /* Cambia a relative para que esté en el flujo normal */
   z-index: 1000; /* Asegura que esté por encima de otros elementos */
   margin-top: auto; /* Empuja el footer al final */
@@ -40,7 +40,7 @@
 /* Estilos para el copyright */
 .coppyRight {
   padding: 0.4rem 0; /* Reducimos el padding vertical */
-  background-color: #001f3e; /* Fondo del copyright */
+  background-color: #18052F; /* Fondo del copyright */
   color: white; /* Color del texto */
   width: 100%; /* Ocupa todo el ancho */
   text-align: center; /* Centrar el texto */

@@ -5,7 +5,7 @@ const strings = {
     labelPhone: "Teléfono:",
     phone: "(+593) 22 976 300 ext 2017",
     labelMail: "Correo Electrónico:",
-    mail: "labspec.epn@gmail.com",
+    mail: "laboratorio.ia@epn.edu.ec",
     footerText: "EPN © Todos los Derechos Reservados"
 }
 export default strings
