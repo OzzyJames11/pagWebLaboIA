@@ -71,40 +71,57 @@
 // export default App;
 
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme'; // Importa el tema personalizado
 //componentes
 import Header from './components/Header/Header';
-// import SliderComponent from './components/SliderComponent';
-// import TableComponent from './components/TableComponent';
 import Footer from './components/Footer/Footer';
 //estilos globales
 import './styles/global.css';
 //router
 import { BrowserRouter as Router } from 'react-router-dom';
-//otras paginas
-// import Subsistema1 from './pages/Experiments/Subsistema1';
-// import Subsistema2 from './pages/Experiments/Subsistema2';
 // paths ?
 import AppRouter from './routes/index'; // Importa el enrutador
 import './App.css';
-
-
-import { Box } from '@mui/material'; // Importa Box de Material-UI  
+import { Box, Typography } from '@mui/material'; // Importa Box de Material-UI  
 
 const App = () => {
+  const [data, setData] = useState([]); // Estado para almacenar los datos
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/pasantes') // Reemplaza con la URL real de tu API
+      .then(response => {
+        setData(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener los datos:', error);
+      });
+  }, []);
+
   return (
     <Router>
       <ThemeProvider theme={theme}>
         <Header />
-        <AppRouter /> 
+        <Box sx={{ bgcolor: 'background.default', color: 'text.primary', minHeight: '100vh', p: 3 }}>
+          <AppRouter />
+
+          {/* Contenedor de la lista con estilos acorde al tema */}
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h4">Lista de Pasantes</Typography>
+            {data.map((pasante, index) => (
+              <Box key={index} sx={{ p: 2, borderBottom: '1px solid gray' }}>
+                <Typography variant="body1">{pasante.nombre} - {pasante.email}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
         <Footer />
       </ThemeProvider>
-        
-
     </Router>
-    );
-  };
+  );
+};
 
 export default App;

@@ -1,20 +1,38 @@
-require("dotenv").config(); // Carga las variables de entorno
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const { Pool } = require('pg');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
+const port = process.env.PORT || 5000;
 
-// Middleware para permitir JSON en las peticiones
+// Configuración CORS
 app.use(cors());
+
+// Middleware para parsear JSON
 app.use(express.json());
 
-// Ruta de prueba
-app.get("/", (req, res) => {
-    res.send("🚀 Servidor funcionando correctamente!");
+// Conectar a la base de datos
+const pool = new Pool({
+    user: 'postgres', // Usuario de PostgreSQL
+    host: 'localhost',
+    database: 'pasantias_lab', // Nombre de la base de datos
+    password: process.env.PG_PASSWORD, // La contraseña que tienes en el archivo .env
+    port: 5432,
+});
+
+// Ruta para obtener los pasantes
+app.get('/api/pasantes', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM pasantes');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error al obtener los pasantes');
+    }
 });
 
 // Iniciar el servidor
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Servidor corriendo en el puerto ${port}`);
 });
