@@ -38,7 +38,6 @@ const AppRouter = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       
-      {/* Rutas protegidas */}
       <Route element={<ProtectedRoute allowedRoles={['pasante', 'administrador']} />}>
         <Route path="/datos" element={<DatosPasante />} />
       </Route>

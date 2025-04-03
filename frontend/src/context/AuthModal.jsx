@@ -142,14 +142,20 @@ const AuthModal = ({ open, onClose, onLoginSuccess }) => {
         password: formData.password
       });
       
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         await login(response.data.user, response.data.token);
         onClose();
-        onLoginSuccess();
+      } else {
+        throw new Error('Respuesta inesperada del servidor');
       }
     } catch (error) {
-      console.error('Error en login:', error.response?.data || error.message);
-      alert(error.response?.data?.message || 'Error al iniciar sesión');
+      console.error('Error en login:', error);
+      // Mostrar error solo si realmente falló
+      if (error.response?.status === 400 || error.response?.status === 401) {
+        alert(error.response?.data?.message || 'Credenciales incorrectas');
+      } else {
+        alert('Error al conectar con el servidor');
+      }
     }
   };
 

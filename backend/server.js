@@ -127,6 +127,71 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+
+// Registrar asistencia (entrada)
+app.post('/api/registrar-entrada', authenticateToken, async (req, res) => {
+    try {
+      const { id_usuario } = req.user;
+      const ahora = new Date();
+      const fecha = ahora.toISOString().split('T')[0];
+      
+      const resultado = await pool.query(
+        `INSERT INTO registros_asistencia 
+         (id_usuario, fecha, hora_entrada, estado) 
+         VALUES ($1, $2, $3, 'pendiente') 
+         RETURNING *`,
+        [id_usuario, fecha, ahora]
+      );
+      
+      res.json({
+        success: true,
+        registro: resultado.rows[0],
+        message: 'Ingreso registrado con éxito'
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al registrar entrada' });
+    }
+  });
+  
+// Registrar asistencia (salida)
+app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
+try {
+    const { id_usuario } = req.user;
+    const ahora = new Date();
+    
+    // Buscar el registro más reciente sin salida
+    const registro = await pool.query(
+    `SELECT * FROM registros_asistencia 
+        WHERE id_usuario = $1 AND hora_salida IS NULL 
+        ORDER BY hora_entrada DESC LIMIT 1`,
+    [id_usuario]
+    );
+    
+    if (registro.rows.length === 0) {
+    return res.status(400).json({ message: 'No hay registro de entrada' });
+    }
+    
+    const resultado = await pool.query(
+    `UPDATE registros_asistencia 
+        SET hora_salida = $1, estado = 'completo' 
+        WHERE id_registro = $2 RETURNING *`,
+    [ahora, registro.rows[0].id_registro]
+    );
+    
+    res.json({
+    success: true,
+    registro: resultado.rows[0],
+    message: 'Salida registrada con éxito'
+    });
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al registrar salida' });
+}
+});
+
+
+
 /*
 
 // Ruta para login de usuarios (VERSIÓN PRODUCCIÓN CON HASH)
@@ -209,6 +274,84 @@ app.get('/api/usuarios', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error("Error en la consulta a la base de datos:", err);
         res.status(500).json({ error: 'Error al obtener los usuarios', details: err.message });
+    }
+});
+
+// Ruta para obtener todas las asistencias del usuario con filtros
+// app.get('/api/mis-asistencias', authenticateToken, async (req, res) => {
+//     try {
+//       const { id_usuario } = req.user;
+//       const { filtro = 'semana', fechaInicio, fechaFin } = req.query;
+      
+//       let query = `
+//         SELECT * FROM registros_asistencia 
+//         WHERE id_usuario = $1
+//       `;
+//       const params = [id_usuario];
+      
+//       // Aplicar filtros de fecha
+//       if (filtro === 'semana') {
+//         query += ` AND fecha >= CURRENT_DATE - INTERVAL '7 days'`;
+//       } else if (filtro === 'mes') {
+//         query += ` AND fecha >= CURRENT_DATE - INTERVAL '30 days'`;
+//       } else if (filtro === 'semestre') {
+//         query += ` AND fecha >= CURRENT_DATE - INTERVAL '6 months'`;
+//       } else if (filtro === 'rango' && fechaInicio && fechaFin) {
+//         query += ` AND fecha BETWEEN $2 AND $3`;
+//         params.push(fechaInicio, fechaFin);
+//       }
+      
+//       query += ` ORDER BY hora_entrada DESC`;
+      
+//       const resultado = await pool.query(query, params);
+//       res.json(resultado.rows);
+//     } catch (error) {
+//       console.error('Error al obtener asistencias:', error);
+//       res.status(500).json({ message: 'Error al obtener asistencias' });
+//     }
+//   });
+
+// new
+// Endpoint corregido para obtener asistencias
+app.get('/api/mis-asistencias', authenticateToken, async (req, res) => {
+    try {
+      const { id_usuario } = req.user;
+      const { filtro = 'semestre', fechaInicio, fechaFin } = req.query; // Cambiado a semestre por defecto
+      
+      let query = `
+        SELECT 
+          id_registro,
+          id_usuario,
+          fecha,
+          hora_entrada,
+          hora_salida,
+          estado,
+          EXTRACT(EPOCH FROM (hora_salida - hora_entrada))/3600 AS horas_trabajadas
+        FROM registros_asistencia 
+        WHERE id_usuario = $1
+      `;
+      
+      const params = [id_usuario];
+      
+      // Aplicar filtros
+      if (filtro === 'semana') {
+        query += ` AND fecha >= CURRENT_DATE - INTERVAL '7 days'`;
+      } else if (filtro === 'mes') {
+        query += ` AND fecha >= CURRENT_DATE - INTERVAL '30 days'`;
+      } else if (filtro === 'semestre') {
+        query += ` AND fecha >= CURRENT_DATE - INTERVAL '6 months'`;
+      } else if (filtro === 'rango' && fechaInicio && fechaFin) {
+        query += ` AND fecha BETWEEN $2 AND $3`;
+        params.push(fechaInicio, fechaFin);
+      }
+      
+      query += ` ORDER BY hora_entrada DESC`;
+      
+      const result = await pool.query(query, params);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error en /api/mis-asistencias:', error);
+      res.status(500).json({ error: 'Error al obtener asistencias' });
     }
 });
 
