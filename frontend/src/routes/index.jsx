@@ -38,11 +38,11 @@ const AppRouter = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       
-      <Route element={<ProtectedRoute allowedRoles={['pasante', 'administrador']} />}>
+      <Route element={<ProtectedRoute allowedRoles={['pasante', 'administrador', 'superadmin']} />}>
         <Route path="/datos" element={<DatosPasante />} />
       </Route>
       
-      <Route element={<ProtectedRoute allowedRoles={['administrador']} />}>
+      <Route element={<ProtectedRoute allowedRoles={['administrador','superadmin']} />}>
         <Route path="/admin" element={<Administracion />} />
       </Route>
     </Routes>

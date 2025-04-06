@@ -83,6 +83,22 @@ const authenticateToken = (req, res, next) => {
 };
 
 
+// En tu backend (server.js)
+const checkAdmin = (req, res, next) => {
+    if (req.user.rol !== 'administrador' && req.user.rol !== 'superadmin') {
+      return res.status(403).json({ message: 'Acceso denegado' });
+    }
+    next();
+  };
+  
+  const checkSuperAdmin = (req, res, next) => {
+    if (req.user.rol !== 'superadmin') {
+      return res.status(403).json({ message: 'Se requieren privilegios de super administrador' });
+    }
+    next();
+  };
+
+
 app.post('/api/login', async (req, res) => {
     try {
         const { id_usuario, password } = req.body;
@@ -191,6 +207,31 @@ try {
 });
 
 
+// Crear nuevo usuario
+app.post('/api/usuarios', authenticateToken, async (req, res) => {
+    try {
+      const { id_usuario, nombre, apellido, email, rol, horario, password } = req.body;
+      
+      // Solo superadmin puede crear otros admins
+      if (req.user.rol !== 'superadmin' && ['administrador', 'superadmin'].includes(rol)) {
+        return res.status(403).json({ error: 'No tienes permisos para crear este rol' });
+      }
+      
+      await pool.query(
+        `INSERT INTO usuarios 
+         (id_usuario, nombre, apellido, email, rol, horario, password) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [id_usuario, nombre, apellido, email, rol, horario, password]
+      );
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al crear usuario' });
+    }
+  });
+
+
 
 /*
 
@@ -261,57 +302,42 @@ app.get('/api/me', authenticateToken, async (req, res) => {
     }
 });
 
-// Ruta para obtener los usuarios (solo administradores)
+// Ruta para obtener usuarios
 app.get('/api/usuarios', authenticateToken, async (req, res) => {
+    console.log("Usuario que hace la petición:", req.user); // Para depuración
+    
     try {
-        // Verificar si el usuario es administrador
-        if (req.user.rol !== 'administrador') {
-            return res.status(403).json({ message: 'No autorizado' });
-        }
-        
-        const result = await pool.query('SELECT id_usuario, nombre, apellido, email, fecha_ingreso, rol FROM usuarios');
-        res.json(result.rows);
-    } catch (err) {
-        console.error("Error en la consulta a la base de datos:", err);
-        res.status(500).json({ error: 'Error al obtener los usuarios', details: err.message });
+      // 1. Verificar que el usuario es admin
+      if (!req.user || !['administrador', 'superadmin'].includes(req.user.rol)) {
+        return res.status(403).json({ error: 'No tienes permisos' });
+      }
+  
+      // 2. Consulta SQL simple
+      let query = `
+        SELECT id_usuario, nombre, apellido, email, rol, horario 
+        FROM usuarios
+      `;
+      const params = [];
+      
+      // 3. Filtro para administradores normales
+      if (req.user.rol === 'administrador') {
+        query += ' WHERE rol = $1';
+        params.push('pasante');
+      }
+      
+      // 4. Ejecutar consulta
+      const result = await pool.query(query, params);
+      
+      // 5. Enviar respuesta en formato correcto
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Error al obtener usuarios' });
     }
-});
+  });
 
-// Ruta para obtener todas las asistencias del usuario con filtros
-// app.get('/api/mis-asistencias', authenticateToken, async (req, res) => {
-//     try {
-//       const { id_usuario } = req.user;
-//       const { filtro = 'semana', fechaInicio, fechaFin } = req.query;
-      
-//       let query = `
-//         SELECT * FROM registros_asistencia 
-//         WHERE id_usuario = $1
-//       `;
-//       const params = [id_usuario];
-      
-//       // Aplicar filtros de fecha
-//       if (filtro === 'semana') {
-//         query += ` AND fecha >= CURRENT_DATE - INTERVAL '7 days'`;
-//       } else if (filtro === 'mes') {
-//         query += ` AND fecha >= CURRENT_DATE - INTERVAL '30 days'`;
-//       } else if (filtro === 'semestre') {
-//         query += ` AND fecha >= CURRENT_DATE - INTERVAL '6 months'`;
-//       } else if (filtro === 'rango' && fechaInicio && fechaFin) {
-//         query += ` AND fecha BETWEEN $2 AND $3`;
-//         params.push(fechaInicio, fechaFin);
-//       }
-      
-//       query += ` ORDER BY hora_entrada DESC`;
-      
-//       const resultado = await pool.query(query, params);
-//       res.json(resultado.rows);
-//     } catch (error) {
-//       console.error('Error al obtener asistencias:', error);
-//       res.status(500).json({ message: 'Error al obtener asistencias' });
-//     }
-//   });
 
-// new
 // Endpoint corregido para obtener asistencias
 app.get('/api/mis-asistencias', authenticateToken, async (req, res) => {
     try {
@@ -354,6 +380,57 @@ app.get('/api/mis-asistencias', authenticateToken, async (req, res) => {
       res.status(500).json({ error: 'Error al obtener asistencias' });
     }
 });
+
+
+// Restablecer contraseña
+app.put('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verificar permisos (admin solo puede resetear pasantes)
+      if (req.user.rol === 'administrador') {
+        const user = await pool.query('SELECT rol FROM usuarios WHERE id_usuario = $1', [id]);
+        if (user.rows[0]?.rol !== 'pasante') {
+          return res.status(403).json({ error: 'No tienes permisos para esta acción' });
+        }
+      }
+      
+      const tempPassword = generarPasswordTemporal();
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      
+      await pool.query(
+        'UPDATE usuarios SET password = $1 WHERE id_usuario = $2',
+        [hashedPassword, id]
+      );
+      
+      // Enviar email con nueva contraseña (implementar esto)
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al restablecer contraseña' });
+    }
+});
+  
+// Eliminar usuario (solo superadmin)
+app.delete('/api/usuarios/:id', authenticateToken, checkSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM usuarios WHERE id_usuario = $1', [id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al eliminar usuario' });
+    }
+});
+  
+function generarPasswordTemporal() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let result = '';
+    for (let i = 0; i < 10; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
 
 // Iniciar el servidor
 pool.connect()
