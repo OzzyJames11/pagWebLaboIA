@@ -1,6 +1,7 @@
 /* Estilos para el AppBar */
 .appBar {
   background-color: #001f3e;
+  height: 64px;
 }
 
 /* Estilos para posición absoluta */

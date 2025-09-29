@@ -209,7 +209,15 @@ const theme = createTheme({
                     backgroundColor: '#18052F', // Color de la barra de navegación
                 }
             }
-        }
+        },
+        MuiTableCell: {
+            styleOverrides: {
+                stickyHeader: {
+                backgroundColor: '#c0a8ff', // fondo claro para todos los stickyHeader
+                color: '#000000ff',
+                },
+            },
+        },
     },
 });
 

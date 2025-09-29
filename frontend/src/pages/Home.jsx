@@ -333,6 +333,7 @@ import '../assets/css/Home.css';
 import AuthModal from '../context/AuthModal';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { mt } from 'date-fns/locale';
 
 // Funciones de formato de fecha
 const formatFullDate = (dateString) => {
@@ -421,15 +422,32 @@ const Home = () => {
 
   return (
     <div className="home">
+
+
       <div className="background-image">
         <img src={imagenHome} alt="Background" className="background-img" />
         <div className="overlay"></div>
       </div>
+
       
-      <h2 style={{textAlign: 'left'}}>Registro de Pasantes</h2>
-      
+      <Box sx={{ 
+          textAlign: 'left', 
+          mt: 0,
+          maxWidth: '1200px',
+          mx: 'auto'
+        }}>
+        <Typography variant='h6' textAlign={'left'} fontWeight={"bold"} fontSize={25} mt={2}>Registro de Pasantes</Typography>
+      </Box>
+
+
       {isAuthenticated ? (
-        <Box sx={{ textAlign: 'left', mt: 2 }}>
+        <Box sx={{ 
+          textAlign: 'left', 
+          mt: 0,
+          maxWidth: '1200px',
+          mx: 'auto'
+        }}>
+            {/* <Typography variant='h6' textAlign={'left'} fontWeight={"bold"} fontSize={25} mt={2}>Registro de Pasantes</Typography> */}
           <Typography variant="h5">
             ¡Bienvenido {user.nombre}!
           </Typography>
@@ -438,10 +456,10 @@ const Home = () => {
             <Box sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
               <Typography variant="h6" fontWeight="bold">Último Ingreso</Typography>
               <Typography>Fecha: {formatFullDate(ultimoRegistro.hora_entrada)}</Typography>
-              <Typography>Hora: {formatTime(ultimoRegistro.hora_entrada)}</Typography>
+              <Typography>Hora entrada: {formatTime(ultimoRegistro.hora_entrada)}</Typography>
               {ultimoRegistro.hora_salida && (
                 <>
-                  <Typography>Fecha salida: {formatFullDate(ultimoRegistro.hora_salida)}</Typography>
+                  {/* <Typography>Fecha salida: {formatFullDate(ultimoRegistro.hora_salida)}</Typography> */}
                   <Typography>Hora salida: {formatTime(ultimoRegistro.hora_salida)}</Typography>
                 </>
               )}
@@ -480,7 +498,7 @@ const Home = () => {
           align="center"
           sx={{ mt: 2 }}
         >
-          {"Regístrate / Iniciar Sesión"}
+          {"Iniciar Sesión"}
         </Button>
       )}
       
@@ -493,3 +511,108 @@ const Home = () => {
 };
 
 export default Home;
+
+//   return (
+//     <div
+//       // className="home"
+//       // style={{
+//         // marginBottom: '-200px',
+//         // paddingBottom: '-200px',
+//       //   display: 'flex',
+//       //   flexDirection: 'column',
+//       //   //minHeight: isAuthenticated ? 'calc(50vh - 150px)' : '100px', // 64px es el header
+//       //   //justifyContent: isAuthenticated ? 'flex-start' : 'center', // Si no está autenticado, centra el contenido
+//       //   // padding: isAuthenticated ? '20px' : '10px',
+//       //   maxHeight: isAuthenticated ? 'calc(100vh - 200px)' : '100px',
+//       // }}
+//     >
+//       {/* Contenido principal */}
+//       <Box>
+//         {/* Banner */}
+//         <div className="background-image">
+//           <img src={imagenHome} alt="Background" className="background-img" />
+//           <div className="overlay"></div>
+//         </div>
+
+//         {/* Título */}
+//         <Typography
+//           variant="h6"
+//           textAlign="left"
+//           fontWeight="bold"
+//           fontSize={25}
+//           mt={2}
+//           px={2}
+//         >
+//           Registro de Pasantes
+//         </Typography>
+
+//         {/* Contenido según autenticación */}
+//         <Box sx={{ px: 2, mt: 2 }}>
+//           {isAuthenticated ? (
+//             <Box sx={{ textAlign: 'left', mt: 0 }}>
+//               <Typography variant="h5">¡Bienvenido {user.nombre}!</Typography>
+
+//               {ultimoRegistro && (
+//                 <Box sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+//                   <Typography variant="h6" fontWeight="bold">
+//                     Último Ingreso
+//                   </Typography>
+//                   <Typography>Fecha: {formatFullDate(ultimoRegistro.hora_entrada)}</Typography>
+//                   <Typography>Hora: {formatTime(ultimoRegistro.hora_entrada)}</Typography>
+//                   {ultimoRegistro.hora_salida && (
+//                     <>
+//                       <Typography>Fecha salida: {formatFullDate(ultimoRegistro.hora_salida)}</Typography>
+//                       <Typography>Hora salida: {formatTime(ultimoRegistro.hora_salida)}</Typography>
+//                     </>
+//                   )}
+//                 </Box>
+//               )}
+
+//               <Box sx={{ mt: 2 }}>
+//                 {(!ultimoRegistro || ultimoRegistro.hora_salida) ? (
+//                   <Button
+//                     variant="contained"
+//                     color="primary"
+//                     onClick={registrarEntrada}
+//                     fullWidth
+//                     sx={{ mt: 2 }}
+//                   >
+//                     Registrar Asistencia
+//                   </Button>
+//                 ) : (
+//                   <Button
+//                     variant="contained"
+//                     color="secondary"
+//                     onClick={registrarSalida}
+//                     fullWidth
+//                     sx={{ mt: 2 }}
+//                   >
+//                     Registrar Salida
+//                   </Button>
+//                 )}
+//               </Box>
+//             </Box>
+//           ) : (
+//             <Button
+//               variant="contained"
+//               color="primary"
+//               onClick={() => setModalOpen(true)}
+//               //fullWidth
+//               sx={{ mt: 2 }}
+//             >
+//               Regístrate / Iniciar Sesión
+//             </Button>
+              
+//           )}
+//           {/* <Box sx={{ mt: -10 }}>a</Box> */}
+//         </Box>
+//       </Box>
+
+//       {/* Modal de autenticación */}
+//       <AuthModal open={modalOpen} onClose={() => setModalOpen(false)} />
+
+//     </div>
+//   );
+// };
+
+// export default Home;

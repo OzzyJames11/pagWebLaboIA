@@ -39,7 +39,7 @@ const Header = (props) => {
                             mx={2}  // Margen horizontal
                         />
                         {/* <Link to="/" style={{ textDecoration: 'none' }}> */}
-                            <img src={laboIALogo} alt="Logotipo EU-GP" style={{ width: '70%', maxWidth: '500px', minWidth: '45px', maxHeight: '50px' }} />
+                            <img src={laboIALogo} alt="Logotipo_laboIA" style={{ width: '70%', maxWidth: '500px', minWidth: '45px', maxHeight: '50px' }} />
                         {/* </Link> */}
                     </Box>
                     {/* Enlaces (versión escritorio) */}
@@ -52,7 +52,6 @@ const Header = (props) => {
                         <Dehaze onClick={() => setOpen(true)} />
                         <Drawer open={open} anchor="right" onClose={() => setOpen(false)}>
                             <Box bgcolor="#001f3e" height="100%" width="225px" display="flex" flexDirection="column">
-                                {/* <img src={headerLogo} alt="Logotipo Scinergy" style={{ width: '100%', padding: '1rem' }} /> */}
                                 <HeaderLinks divider closeDrawer={() => setOpen(false)} />
                             </Box>
                         </Drawer>

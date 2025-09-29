@@ -1,361 +1,3 @@
-// import React from 'react';
-// import { Typography, Box, Paper } from '@mui/material';
-// import { useAuth } from '../../context/AuthContext';
-
-// const DatosPasante = () => {
-//   const { user } = useAuth();
-
-//   return (
-//     <Box sx={{ p: 3 }}>
-//       <Typography variant="h4" gutterBottom>
-//         Mis Datos Personales
-//       </Typography>
-      
-//       <Paper elevation={3} sx={{ p: 3, maxWidth: 600 }}>
-//         <Typography variant="body1" paragraph>
-//           <strong>ID Usuario:</strong> {user?.id_usuario}
-//         </Typography>
-//         <Typography variant="body1" paragraph>
-//           <strong>Nombre:</strong> {user?.nombre} {user?.apellido}
-//         </Typography>
-//         <Typography variant="body1" paragraph>
-//           <strong>Email:</strong> {user?.email}
-//         </Typography>
-//         <Typography variant="body1" paragraph>
-//           <strong>Rol:</strong> {user?.rol}
-//         </Typography>
-//       </Paper>
-//     </Box>
-//   );
-// };
-
-// export default DatosPasante;
-
-
-// import React, { useEffect, useState } from 'react';
-// import { 
-//   Box, 
-//   Typography, 
-//   Grid, 
-//   Paper,
-//   Tabs,
-//   Tab,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   TextField,
-//   MenuItem
-// } from '@mui/material';
-// import { useAuth } from '../../context/AuthContext';
-// import axios from 'axios';
-// import { formatFullDate, formatTime } from '../../utils/dateUtils';
-// import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
-// const DatosPasante = () => {
-//   const { user, ultimoRegistro } = useAuth();
-//   const [asistencias, setAsistencias] = useState([]);
-//   const [tabValue, setTabValue] = useState(0);
-//   const [filtro, setFiltro] = useState('semana');
-//   const [fechaInicio, setFechaInicio] = useState('');
-//   const [fechaFin, setFechaFin] = useState('');
-
-//   useEffect(() => {
-//     const cargarAsistencias = async () => {
-//       try {
-//         let url = '/api/mis-asistencias';
-//         const params = {};
-        
-//         if (filtro === 'rango' && fechaInicio && fechaFin) {
-//           params.fechaInicio = fechaInicio;
-//           params.fechaFin = fechaFin;
-//         } else {
-//           params.filtro = filtro;
-//         }
-        
-//         const response = await axios.get(url, { params });
-//         setAsistencias(response.data);
-//       } catch (error) {
-//         console.error('Error al cargar asistencias:', error);
-//       }
-//     };
-
-//     cargarAsistencias();
-//   }, [filtro, fechaInicio, fechaFin]);
-
-//   // Datos para el gráfico
-//   const datosGrafico = asistencias.map(reg => ({
-//     fecha: formatFullDate(reg.hora_entrada),
-//     horas: (new Date(reg.hora_salida) - new Date(reg.hora_entrada)) / (1000 * 60 * 60),
-//     entrada: formatTime(reg.hora_entrada),
-//     salida: reg.hora_salida ? formatTime(reg.hora_salida) : '--'
-//   }));
-
-//   return (
-//     <Box sx={{ p: 3 }}>
-//       <Typography variant="h4" gutterBottom>Información General</Typography>
-      
-//       <Grid container spacing={3}>
-//         <Grid item xs={12} md={6}>
-//           <Paper elevation={3} sx={{ p: 2 }}>
-//             <Typography variant="h6" gutterBottom>Datos Personales</Typography>
-//             <Typography><strong>Nombre:</strong> {user.nombre} {user.apellido}</Typography>
-//             <Typography><strong>Rol:</strong> {user.rol}</Typography>
-//             <Typography><strong>Código Único:</strong> {user.id_usuario}</Typography>
-//           </Paper>
-//         </Grid>
-        
-//         <Grid item xs={12} md={6}>
-//           <Paper elevation={3} sx={{ p: 2 }}>
-//             <Typography variant="h6" gutterBottom>Horario</Typography>
-//             <Typography>{user.horario || 'No especificado'}</Typography>
-//           </Paper>
-//         </Grid>
-//       </Grid>
-
-//       <Box sx={{ mt: 3 }}>
-//         <Paper elevation={3} sx={{ p: 2 }}>
-//           <Typography variant="h6" gutterBottom>Último Ingreso</Typography>
-//           {ultimoRegistro ? (
-//             <>
-//               <Typography><strong>Fecha:</strong> {formatFullDate(ultimoRegistro.hora_entrada)}</Typography>
-//               <Typography><strong>Hora:</strong> {formatTime(ultimoRegistro.hora_entrada)}</Typography>
-//             </>
-//           ) : (
-//             <Typography>No hay registros de ingreso</Typography>
-//           )}
-//         </Paper>
-//       </Box>
-
-//       <Box sx={{ mt: 3 }}>
-//         <Paper elevation={3} sx={{ p: 2 }}>
-//           <Typography variant="h5" gutterBottom>Registro de Asistencias</Typography>
-          
-//           <Box sx={{ mb: 2 }}>
-//             <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-//               <Tab label="Tabla" />
-//               <Tab label="Gráfico" />
-//             </Tabs>
-//           </Box>
-          
-//           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-//             <TextField
-//               select
-//               label="Filtrar por"
-//               value={filtro}
-//               onChange={(e) => setFiltro(e.target.value)}
-//               sx={{ minWidth: 120 }}
-//             >
-//               <MenuItem value="semana">Semana actual</MenuItem>
-//               <MenuItem value="mes">Mes actual</MenuItem>
-//               <MenuItem value="semestre">Último semestre</MenuItem>
-//               <MenuItem value="rango">Rango personalizado</MenuItem>
-//             </TextField>
-            
-//             {filtro === 'rango' && (
-//               <>
-//                 <TextField
-//                   label="Fecha inicio"
-//                   type="date"
-//                   InputLabelProps={{ shrink: true }}
-//                   value={fechaInicio}
-//                   onChange={(e) => setFechaInicio(e.target.value)}
-//                 />
-//                 <TextField
-//                   label="Fecha fin"
-//                   type="date"
-//                   InputLabelProps={{ shrink: true }}
-//                   value={fechaFin}
-//                   onChange={(e) => setFechaFin(e.target.value)}
-//                 />
-//               </>
-//             )}
-//           </Box>
-          
-//           {tabValue === 0 ? (
-//             <TableContainer>
-//               <Table>
-//                 <TableHead>
-//                   <TableRow>
-//                     <TableCell>Fecha</TableCell>
-//                     <TableCell>Hora Entrada</TableCell>
-//                     <TableCell>Hora Salida</TableCell>
-//                     <TableCell>Horas</TableCell>
-//                   </TableRow>
-//                 </TableHead>
-//                 <TableBody>
-//                   {asistencias.map((registro) => (
-//                     <TableRow key={registro.id_registro}>
-//                       <TableCell>{formatFullDate(registro.hora_entrada)}</TableCell>
-//                       <TableCell>{formatTime(registro.hora_entrada)}</TableCell>
-//                       <TableCell>
-//                         {registro.hora_salida ? formatTime(registro.hora_salida) : '--'}
-//                       </TableCell>
-//                       <TableCell>
-//                         {registro.hora_salida 
-//                           ? ((new Date(registro.hora_salida) - new Date(registro.hora_entrada)) / (1000 * 60 * 60)).toFixed(2)
-//                           : '--'}
-//                       </TableCell>
-//                     </TableRow>
-//                   ))}
-//                 </TableBody>
-//               </Table>
-//             </TableContainer>
-//           ) : (
-//             <Box sx={{ height: 400 }}>
-//               <ResponsiveContainer width="100%" height="100%">
-//                 <BarChart data={datosGrafico}>
-//                   <CartesianGrid strokeDasharray="3 3" />
-//                   <XAxis dataKey="fecha" />
-//                   <YAxis label={{ value: 'Horas', angle: -90, position: 'insideLeft' }} />
-//                   <Tooltip />
-//                   <Legend />
-//                   <Bar dataKey="horas" name="Horas trabajadas" fill="#8884d8" />
-//                 </BarChart>
-//               </ResponsiveContainer>
-//             </Box>
-//           )}
-//         </Paper>
-//       </Box>
-//     </Box>
-//   );
-// };
-
-// export default DatosPasante;
-
-
-
-// Funciona pero presenta una tabla super simple
-// import React, { useState, useEffect } from 'react';
-// import { Box, Typography, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button } from '@mui/material';
-// import { useAuth } from '../../context/AuthContext';
-// import axios from 'axios';
-// import { formatFullDate, formatTime } from '../../utils/dateUtils';
-
-// const Datos = () => {
-//   const { user, isAuthenticated } = useAuth();
-//   const [tabValue, setTabValue] = useState('semana');
-//   const [asistencias, setAsistencias] = useState([]);
-//   const [fechaInicio, setFechaInicio] = useState('');
-//   const [fechaFin, setFechaFin] = useState('');
-
-//   const cargarAsistencias = async (filtro = 'semana') => {
-//     if (!isAuthenticated || !user?.id_usuario) return;
-    
-//     try {
-//       const params = {
-//         filtro: filtro,
-//         ...(filtro === 'rango' && { fechaInicio, fechaFin })
-//       };
-      
-//       const response = await axios.get('http://localhost:5000/api/mis-asistencias', {
-//         params,
-//         headers: {
-//           Authorization: `Bearer ${localStorage.getItem('token')}`
-//         }
-//       });
-      
-//       setAsistencias(response.data);
-//     } catch (error) {
-//       console.error('Error al cargar asistencias:', error);
-//       setAsistencias([]);
-//     }
-//   };
-
-//   useEffect(() => {
-//     cargarAsistencias(tabValue);
-//   }, [isAuthenticated, user?.id_usuario, tabValue]);
-
-//   const handleTabChange = (event, newValue) => {
-//     setTabValue(newValue);
-//   };
-
-//   const handleFiltrarPorRango = () => {
-//     if (fechaInicio && fechaFin) {
-//       cargarAsistencias('rango');
-//     }
-//   };
-
-//   return (
-//     <Box sx={{ width: '100%' }}>
-//       <Typography variant="h4" gutterBottom>
-//         Mis Asistencias
-//       </Typography>
-      
-//       <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 3 }}>
-//         <Tab label="Semanal" value="semana" />
-//         <Tab label="Mensual" value="mes" />
-//         <Tab label="Semestral" value="semestre" />
-//         <Tab label="Rango Personalizado" value="rango" />
-//       </Tabs>
-      
-//       {tabValue === 'rango' && (
-//         <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-//           <TextField
-//             label="Fecha inicio"
-//             type="date"
-//             value={fechaInicio}
-//             onChange={(e) => setFechaInicio(e.target.value)}
-//             InputLabelProps={{ shrink: true }}
-//           />
-//           <TextField
-//             label="Fecha fin"
-//             type="date"
-//             value={fechaFin}
-//             onChange={(e) => setFechaFin(e.target.value)}
-//             InputLabelProps={{ shrink: true }}
-//           />
-//           <Button 
-//             variant="contained" 
-//             onClick={handleFiltrarPorRango}
-//             disabled={!fechaInicio || !fechaFin}
-//           >
-//             Filtrar
-//           </Button>
-//         </Box>
-//       )}
-      
-//       <TableContainer component={Paper}>
-//         <Table>
-//           <TableHead>
-//             <TableRow>
-//               <TableCell>Fecha</TableCell>
-//               <TableCell>Hora Entrada</TableCell>
-//               <TableCell>Hora Salida</TableCell>
-//               <TableCell>Estado</TableCell>
-//             </TableRow>
-//           </TableHead>
-//           <TableBody>
-//             {asistencias.length > 0 ? (
-//               asistencias.map((asistencia) => (
-//                 <TableRow key={asistencia.id_registro}>
-//                   <TableCell>{formatFullDate(asistencia.hora_entrada)}</TableCell>
-//                   <TableCell>{formatTime(asistencia.hora_entrada)}</TableCell>
-//                   <TableCell>
-//                     {asistencia.hora_salida ? formatTime(asistencia.hora_salida) : 'No registrada'}
-//                   </TableCell>
-//                   <TableCell>{asistencia.estado}</TableCell>
-//                 </TableRow>
-//               ))
-//             ) : (
-//               <TableRow>
-//                 <TableCell colSpan={4} align="center">
-//                   No hay registros de asistencia
-//                 </TableCell>
-//               </TableRow>
-//             )}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
-//     </Box>
-//   );
-// };
-
-// export default Datos;
-
-
 import React, { useEffect, useState } from 'react';
 import { 
   Box, 
@@ -371,12 +13,16 @@ import {
   TableHead,
   TableRow,
   TextField,
-  MenuItem
+  MenuItem, 
+  Button, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { formatFullDate, formatTime } from '../../utils/dateUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { calcularHorasTotales } from '../../utils/asistenciasUtils';
+
 
 const DatosPasante = () => {
   const { user, ultimoRegistro } = useAuth();
@@ -387,42 +33,14 @@ const DatosPasante = () => {
   const [fechaFin, setFechaFin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const [openPasswordModal, setOpenPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
-  // useEffect(() => {
-  //   const cargarAsistencias = async () => {
-  //     if (!user?.id_usuario) return;
-      
-  //     setLoading(true);
-  //     setError(null);
-      
-  //     try {
-  //       const params = { filtro };
-        
-  //       if (filtro === 'rango' && fechaInicio && fechaFin) {
-  //         params.fechaInicio = fechaInicio;
-  //         params.fechaFin = fechaFin;
-  //       }
-        
-  //       const response = await axios.get('http://localhost:5000/api/mis-asistencias', {
-  //         params,
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem('token')}`
-  //         }
-  //       });
-        
-  //       console.log('Datos recibidos:', response.data); // Para depuración
-  //       setAsistencias(response.data);
-  //     } catch (err) {
-  //       console.error('Error al cargar asistencias:', err);
-  //       setError('Error al cargar los datos de asistencia');
-  //       setAsistencias([]);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   cargarAsistencias();
-  // }, [filtro, fechaInicio, fechaFin, user?.id_usuario]);
+  const { horasEnteras, minutos } = calcularHorasTotales(asistencias);
 
   useEffect(() => {
     const cargarAsistencias = async () => {
@@ -463,36 +81,100 @@ const DatosPasante = () => {
   }, [filtro, fechaInicio, fechaFin, user?.id_usuario]);
 
   // Preparar datos para el gráfico
-  const datosGrafico = asistencias.map(reg => ({
-    fecha: new Date(reg.hora_entrada).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
+  // const datosGrafico = asistencias.map(reg => ({
+  //   fecha: new Date(reg.hora_entrada).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
+  //   horas: reg.hora_salida 
+  //     ? ((new Date(reg.hora_salida) - new Date(reg.hora_entrada)) / (1000 * 60 * 60))
+  //     : 0,
+  //   entrada: formatTime(reg.hora_entrada),
+  //   salida: reg.hora_salida ? formatTime(reg.hora_salida) : '--'
+  // }));
+  const datosGrafico = asistencias
+  .map(reg => ({
+    fecha: new Date(reg.hora_entrada),
+    fechaTexto: new Date(reg.hora_entrada).toLocaleDateString('es-ES', { 
+      // day: 'numeric', 
+      // month: 'short',
+      // year: '2-digit'
+      weekday: 'short', 
+      day: 'numeric',
+      month: 'short'
+    }),
+    diaNumero: new Date(reg.hora_entrada).getDate(),
     horas: reg.hora_salida 
-      ? ((new Date(reg.hora_salida) - new Date(reg.hora_entrada)) / (1000 * 60 * 60))
-      : 0,
+      ? ((new Date(reg.hora_salida) - new Date(reg.hora_entrada)) / (1000 * 60 * 60)) : 0,
     entrada: formatTime(reg.hora_entrada),
     salida: reg.hora_salida ? formatTime(reg.hora_salida) : '--'
-  }));
+  }))
+  .sort((a, b) => a.fecha - b.fecha); // Ordenamos cronológicamente
+
+  // === FUNCIONES MODAL CAMBIO DE CONTRASEÑA ===
+  const handleOpenPasswordModal = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setPasswordError('');
+    setPasswordSuccess('');
+    setOpenPasswordModal(true);
+  };
+
+  const handleClosePasswordModal = () => setOpenPasswordModal(false);
+
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+    if (!currentPassword || !newPassword) {
+      setPasswordError('Todos los campos son obligatorios');
+      return;
+    }
+
+    try {
+      await axios.put(`http://localhost:5000/api/usuarios/${user.id_usuario}/change-password`, {
+        currentPassword,
+        newPassword
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setPasswordSuccess('Contraseña cambiada correctamente');
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (err) {
+      setPasswordError(err.response?.data?.error || 'Error al cambiar la contraseña');
+    }
+  };
 
   return (
-    <Box sx={{ p: 3, pt: 35 }}>
-      {/* Información General */}
+    <Box sx={{ 
+      // display: 'flex',
+      // flexDirection: 'column',
+      p: 3,
+      maxWidth: '1200px', 
+      mx: 'auto',
+      // backgroundColor: 'background.paper'
+      }}>
+
       <Typography variant="h4" gutterBottom>Información General</Typography>
       
       <Grid container spacing={3}>
         {/* Columna izquierda - Datos personales */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
+          <Paper elevation={3} sx={{ p: 2/*, height: '100%'*/ }}>
             <Typography variant="h6" gutterBottom>Datos Personales</Typography>
             <Typography><strong>Nombre:</strong> {user?.nombre} {user?.apellido}</Typography>
             <Typography><strong>Rol:</strong> {user?.rol}</Typography>
             <Typography><strong>Código Único:</strong> {user?.id_usuario}</Typography>
+              <Box sx={{ mt: 2 }}>
+                <Button variant="outlined" onClick={handleOpenPasswordModal}>Cambiar Contraseña</Button>
+              </Box>
           </Paper>
         </Grid>
         
         {/* Columna derecha - Horario */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
+          <Paper elevation={3} sx={{ p: 2/*, height: '100%' */}}>
             <Typography variant="h6" gutterBottom>Horario</Typography>
-            <Typography>{user?.horario || 'Lunes a Viernes, 8:00 AM - 5:00 PM'}</Typography>
+            <Typography sx={{ whiteSpace: 'pre-line' }}>
+              {user?.horario}
+            </Typography>
           </Paper>
         </Grid>
       </Grid>
@@ -504,13 +186,14 @@ const DatosPasante = () => {
           {ultimoRegistro ? (
             <>
               <Typography><strong>Fecha:</strong> {formatFullDate(ultimoRegistro.hora_entrada)}</Typography>
-              <Typography><strong>Hora:</strong> {formatTime(ultimoRegistro.hora_entrada)}</Typography>
+              <Typography><strong>Hora Entrada:</strong> {formatTime(ultimoRegistro.hora_entrada)}</Typography>
               {ultimoRegistro.hora_salida && (
                 <>
                   <Typography><strong>Hora Salida:</strong> {formatTime(ultimoRegistro.hora_salida)}</Typography>
                   <Typography><strong>Duración:</strong> {(
                     (new Date(ultimoRegistro.hora_salida) - new Date(ultimoRegistro.hora_entrada)) / (1000 * 60 * 60)
                   ).toFixed(2)} horas</Typography>
+                  
                 </>
               )}
             </>
@@ -520,16 +203,61 @@ const DatosPasante = () => {
         </Paper>
       </Box>
 
+      {/* Futura descarga de reporte */}
+      <Paper elevation={3} sx={{ p: 2, mt: 3 }}>
+        <Typography fontSize={20}><strong>Horas acumuladas totales:</strong> {horasEnteras} horas y {minutos} minutos</Typography>
+      </Paper>
+
+      {/* === MODAL CAMBIO DE CONTRASEÑA === */}
+      <Dialog open={openPasswordModal} onClose={handleClosePasswordModal}>
+        <DialogTitle>Cambiar Contraseña</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Contraseña actual"
+            type="password"
+            fullWidth
+            margin="dense"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <TextField
+            label="Nueva contraseña"
+            type="password"
+            fullWidth
+            margin="dense"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          {passwordError && <Typography color="error" sx={{ mt: 1 }}>{passwordError}</Typography>}
+          {passwordSuccess && <Typography color="success.main" sx={{ mt: 1 }}>{passwordSuccess}</Typography>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClosePasswordModal}>Cancelar</Button>
+          <Button variant="contained" onClick={handleChangePassword}>Guardar</Button>
+        </DialogActions>
+      </Dialog>
+
+
       {/* Registro de Asistencias */}
-      <Box sx={{ mt: 3 }}>
-        <Paper elevation={3} sx={{ p: 2 }}>
+      <Box sx={{ 
+        flex: 1,
+        overflow: 'auto',
+        mt: 3,
+        position: 'relative',
+        zIndex: 0,
+        minHeight: 300 // Altura mínima garantizada
+
+      }}>
+        <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
           <Typography variant="h5" gutterBottom>Registro de Asistencias</Typography>
           
           {/* Pestañas Tabla/Gráfico */}
           <Box sx={{ mb: 2 }}>
-            <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-              <Tab label="Tabla" />
-              <Tab label="Gráfico" />
+            <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)} TabIndicatorProps={{
+              style: { backgroundColor: '#9B2EF4' } 
+            }}>
+              <Tab label="Tabla" sx={{'&.Mui-selected': { color: '#9B2EF4' }}} />
+              <Tab label="Gráfico" sx={{'&.Mui-selected': { color: '#9B2EF4' }}} />
             </Tabs>
           </Box>
           
@@ -570,31 +298,34 @@ const DatosPasante = () => {
           
           {/* Contenido según pestaña seleccionada */}
           {loading ? (
-            <Typography>Cargando datos...</Typography>
+            // <Typography>Cargando datos...</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress />
+            </Box>
           ) : error ? (
             <Typography color="error">{error}</Typography>
           ) : tabValue === 0 ? (
             // Vista de tabla
-            <TableContainer>
-              <Table>
+            <TableContainer sx={{ maxHeight: 500, overflow: 'auto' }}>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Fecha</TableCell>
-                    <TableCell>Hora Entrada</TableCell>
-                    <TableCell>Hora Salida</TableCell>
-                    <TableCell>Horas trabajadas</TableCell>
+                    <TableCell align="center">Fecha</TableCell>
+                    <TableCell align="center">Hora Entrada</TableCell>
+                    <TableCell align="center">Hora Salida</TableCell>
+                    <TableCell align="center">Horas trabajadas</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {asistencias.length > 0 ? (
                     asistencias.map((registro) => (
                       <TableRow key={registro.id_registro}>
-                        <TableCell>{formatFullDate(registro.hora_entrada)}</TableCell>
-                        <TableCell>{formatTime(registro.hora_entrada)}</TableCell>
-                        <TableCell>
+                        <TableCell align="center">{formatFullDate(registro.hora_entrada)}</TableCell>
+                        <TableCell align="center">{formatTime(registro.hora_entrada)}</TableCell>
+                        <TableCell align="center">
                           {registro.hora_salida ? formatTime(registro.hora_salida) : '--'}
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="center">
                           {registro.hora_salida 
                             ? ((new Date(registro.hora_salida) - new Date(registro.hora_entrada)) / (1000 * 60 * 60)).toFixed(2)
                             : '--'}
@@ -613,7 +344,7 @@ const DatosPasante = () => {
             </TableContainer>
           ) : (
             // Vista de gráfico
-            <Box sx={{ height: 400 }}>
+            <Box sx={{ height: 500, overflow: 'hidden' }}>
               {asistencias.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -622,26 +353,49 @@ const DatosPasante = () => {
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
-                      dataKey="fecha" 
-                      angle={-45} 
-                      textAnchor="end"
-                      height={60}
+                      dataKey="diaNumero" 
+                      label={{ value: "Día del mes", position: "bottom", dx: -30, dy: -30, style: { fontFamily: "Poppins", fontSize: 18 } }}
+                      angle={0} 
+                      textAnchor="middle"
+                      height={55}
+                      tick={{ style: { fontFamily: "Poppins", fontSize: 17 } }}
+
                     />
                     <YAxis 
                       label={{ 
-                        value: 'Horas trabajadas', 
+                        value: 'Cantidad de horas', 
                         angle: -90, 
-                        position: 'insideLeft' 
+                        position: 'outsideLeft',
+                        dx: -20,
+                        dy: 0,
+                        style: { fontFamily: "Poppins", fontSize: 18 }
                       }} 
+                      tick={{ style: { fontFamily: "Poppins", fontSize: 17 } }}
                     />
-                    <Tooltip 
-                      formatter={(value) => [`${value} horas`, 'Horas trabajadas']}
-                      labelFormatter={(label) => `Fecha: ${label}`}
-                    />
-                    <Legend />
+                    <Tooltip content={({ payload }) => {
+                      if (payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div style={{ 
+                            backgroundColor: '#ffffffff', 
+                            color: '#9B2EF4', 
+                            padding: '5px', 
+                            border: '1px solid #8604f7ff',
+                            fontFamily: "Poppins",
+                            fontSize: 14,
+                            borderRadius: 5, 
+                        }}>   
+                            <div><strong>Fecha:</strong> {formatFullDate(data.fecha)}</div>
+                            <div><strong>Horas trabajadas:</strong> {data.horas.toFixed(2)}</div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }} />
+                    <Legend wrapperStyle={{ fontFamily: "Poppins", fontSize: 18 }}/>
                     <Bar 
                       dataKey="horas" 
-                      name="Horas trabajadas" 
+                      name="Horas trabajadas por día" 
                       fill="#8884d8" 
                       barSize={30}
                     />

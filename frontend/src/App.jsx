@@ -130,11 +130,13 @@ const App = () => {
     <Router>
       <ThemeProvider theme={theme}>
         <AuthProvider>
-          <Header />
-          <Box sx={{ bgcolor: 'background.default', color: 'text.primary', minHeight: '100vh', p: 3 }}>
-            <AppRouter />
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
+            <Header />
+            <Box sx={{ flex: 1, bgcolor: 'background.paper', color: 'text.primary', p: 3, pt: '64px' }}>
+              <AppRouter />
+            </Box>
+            <Footer />
           </Box>
-          <Footer />
         </AuthProvider>
       </ThemeProvider>
     </Router>

@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 0; /* Elimina el padding */
   text-align: center;
-  padding-top: 25px; /* Agrega espaciado para que el header no tape contenido*/
+  /*padding-top: 25px;  Agrega espaciado para que el header no tape contenido*/
 }
 
 .logo {

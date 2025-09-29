@@ -122,7 +122,7 @@ const HeaderLinks = ({ divider, closeDrawer }) => {
           )}
 
           {/* Botón de Cerrar Sesión */}
-          <Button 
+          {/* <Button 
             onClick={() => {
               logout();
               if (closeDrawer) closeDrawer();
@@ -131,17 +131,26 @@ const HeaderLinks = ({ divider, closeDrawer }) => {
             startIcon={<ExitToApp />}
           >
             <span className={styles.items}>Cerrar Sesión</span>
-          </Button>
+          </Button> */}
+
+          <span onClick={() => { logout(); if (closeDrawer) closeDrawer(); }} className={styles.navLink}>
+            <Button className={styles.button} startIcon={<ExitToApp />}>
+              <span className={styles.items}>Cerrar Sesión</span>
+            </Button>
+          </span>
+
+
+
           {divider && <Divider className={styles.divider} />}
         </>
       )}
 
       {/* Enlace a Registro/Login (solo para no autenticados) */}
       {!isAuthenticated && (
-        <Link onClick={closeDrawer} to="/registro" className={styles.navLink}>
+        <Link onClick={closeDrawer} to="/register" className={styles.navLink}>
           <Button className={styles.button}>
             <Person className={styles.icons} />
-            <span className={styles.items}>Regístrate / Inicia Sesión</span>
+            <span className={styles.items}>Regístrate</span>
           </Button>
         </Link>
       )}

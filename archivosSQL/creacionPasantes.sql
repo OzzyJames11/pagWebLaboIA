@@ -151,7 +151,54 @@ INSERT INTO registros_asistencia (id_usuario, fecha, hora_entrada, hora_salida, 
 
 SELECT COUNT(*) FROM registros_asistencia WHERE id_usuario = 'P001';
 
+select * from usuarios
+select * from registros_asistencia WHERE id_usuario = 'P001';
+select * from registros_asistencia WHERE id_usuario = 'A001';
 
+
+-- Inserción de datos de ejemplo en la tabla registros_asistencia
+INSERT INTO registros_asistencia (id_usuario, fecha, hora_entrada, hora_salida, estado) VALUES
+('P001', '2025-03-29', '2025-03-29 08:05:12.123', '2025-03-29 17:12:45.456', 'completo'),
+('P001', '2025-03-30', '2025-03-30 08:10:33.231', '2025-03-30 17:00:01.789', 'completo'),
+('P001', '2025-03-31', '2025-03-31 08:01:45.321', '2025-03-31 16:45:23.456', 'completo'),
+('P001', '2025-04-01', '2025-04-01 08:15:22.654', '2025-04-01 17:10:10.111', 'completo'),
+('P001', '2025-04-02', '2025-04-02 08:20:00.999', '2025-04-02 17:20:35.888', 'completo'),
+('P001', '2025-04-03', '2025-04-03 07:55:44.012', '2025-04-03 16:50:29.456', 'completo'),
+('P001', '2025-04-04', '2025-04-04 08:00:00.500', NULL, 'pendiente'),
+('P001', '2025-04-05', '2025-04-05 08:03:30.312', '2025-04-05 17:05:05.732', 'completo'),
+('P001', '2025-04-06', '2025-04-06 08:07:15.890', '2025-04-06 17:25:50.222', 'completo'),
+('P001', '2025-04-07', '2025-04-07 08:11:59.701', NULL, 'pendiente'),
+('P001', '2025-04-08', '2025-04-08 08:02:43.123', '2025-04-08 17:11:17.456', 'completo'),
+('P001', '2025-04-09', '2025-04-09 08:14:35.999', '2025-04-09 17:07:41.777', 'completo'),
+('P001', '2025-04-10', '2025-04-10 08:09:58.843', '2025-04-10 17:19:08.333', 'completo'),
+('P001', '2025-04-11', '2025-04-11 08:13:02.101', NULL, 'pendiente'),
+('P001', '2025-04-12', '2025-04-12 08:06:24.789', '2025-04-12 16:59:59.100', 'completo'),
+('P001', '2025-04-13', '2025-04-13 08:04:12.777', '2025-04-13 17:22:45.211', 'completo'),
+('P001', '2025-04-14', '2025-04-14 08:08:51.369', '2025-04-14 17:04:14.789', 'completo'),
+('P001', '2025-04-15', '2025-04-15 08:16:33.300', NULL, 'pendiente'),
+('P001', '2025-04-16', '2025-04-16 08:12:17.800', '2025-04-16 17:16:22.100', 'completo'),
+('P001', '2025-04-17', '2025-04-17 08:18:45.200', '2025-04-17 17:30:00.000', 'completo');
+
+
+-- Actualización V5.0
+-- Creación de más usuarios
+INSERT INTO usuarios (id_usuario, nombre, apellido, email, password, rol, horario) VALUES
+('P003', 'Jamesz', 'Martinezz', 'james.martinezz@email.com', 'jamesz123', 'pasante', E'Lunes: 09:00 a 11:00\nMartes: 14:00 a 16:00\nMiércoles: 10:00 a 13:00' );
+
+SELECT * FROM usuarios ORDER BY id_usuario ASC;
+SELECT id_usuario, horario FROM usuarios
+
+
+-- columna para reforzar el cambio de contraseña
+ALTER TABLE usuarios ADD COLUMN must_change_password BOOLEAN DEFAULT false;
+
+cmCqP4Z2C2
+CQ6kU9MWk4
+
+ZQsmkswFeL
+uvsn9s
+
+DELETE FROM usuarios WHERE id_usuario = 'P005';
 
 
 

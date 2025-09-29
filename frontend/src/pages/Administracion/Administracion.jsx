@@ -1,818 +1,16 @@
-// import React, { useState, useEffect } from 'react';
-// import { 
-//   Box, Typography, Table, TableBody, TableCell, TableContainer, 
-//   TableHead, TableRow, Paper, Button, TextField, Dialog, 
-//   DialogActions, DialogContent, DialogTitle, IconButton,
-//   FormControl, InputLabel, Select, MenuItem, Tabs, Tab, Alert
-// } from '@mui/material';
-
-// import { Edit, Delete, Add } from '@mui/icons-material';
-// import axios from 'axios';
-// import { useAuth } from '../../context/AuthContext';
-
-// const Administracion = () => {
-//   const [usuarios, setUsuarios] = useState([]);
-//   const [openDialog, setOpenDialog] = useState(false);
-//   const [currentUsuario, setCurrentUsuario] = useState(null);
-//   const [formData, setFormData] = useState({
-//     id_usuario: '',
-//     nombre: '',
-//     apellido: '',
-//     email: '',
-//     fecha_ingreso: '',
-//     rol: 'pasante'
-//   });
-//   const { user } = useAuth();
-
-//   useEffect(() => {
-//     if (user?.rol === 'administrador') {
-//       fetchUsuarios();
-//     }
-//   }, [user]);
-
-//   const fetchUsuarios = async () => {
-//     try {
-//       const response = await axios.get('http://localhost:5000/api/usuarios');
-//       setUsuarios(response.data);
-//     } catch (error) {
-//       console.error('Error al obtener usuarios:', error);
-//     }
-//   };
-
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData(prev => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     try {
-//       if (currentUsuario) {
-//         // Actualizar usuario
-//         await axios.put(`http://localhost:5000/api/usuarios/${currentUsuario.id_usuario}`, formData);
-//       } else {
-//         // Crear nuevo usuario (sin contraseña en este ejemplo)
-//         await axios.post('http://localhost:5000/api/usuarios', formData);
-//       }
-//       fetchUsuarios();
-//       handleCloseDialog();
-//     } catch (error) {
-//       console.error('Error al guardar usuario:', error);
-//     }
-//   };
-
-//   const handleEdit = (usuario) => {
-//     setCurrentUsuario(usuario);
-//     setFormData({
-//       id_usuario: usuario.id_usuario,
-//       nombre: usuario.nombre,
-//       apellido: usuario.apellido,
-//       email: usuario.email,
-//       fecha_ingreso: usuario.fecha_ingreso,
-//       rol: usuario.rol
-//     });
-//     setOpenDialog(true);
-//   };
-
-//   const handleDelete = async (id_usuario) => {
-//     try {
-//       await axios.delete(`http://localhost:5000/api/usuarios/${id_usuario}`);
-//       fetchUsuarios();
-//     } catch (error) {
-//       console.error('Error al eliminar usuario:', error);
-//     }
-//   };
-
-//   const handleOpenDialog = () => {
-//     setCurrentUsuario(null);
-//     setFormData({
-//       id_usuario: '',
-//       nombre: '',
-//       apellido: '',
-//       email: '',
-//       fecha_ingreso: new Date().toISOString().split('T')[0],
-//       rol: 'pasante'
-//     });
-//     setOpenDialog(true);
-//   };
-
-//   const handleCloseDialog = () => {
-//     setOpenDialog(false);
-//   };
-
-//   return (
-//     <Box sx={{ p: 3 }}>
-//       <Typography variant="h4" gutterBottom>
-//         Administración de Usuarios
-//       </Typography>
-      
-//       <Button 
-//         variant="contained" 
-//         startIcon={<Add />} 
-//         onClick={handleOpenDialog}
-//         sx={{ mb: 3 }}
-//       >
-//         Agregar Usuario
-//       </Button>
-      
-//       <TableContainer component={Paper}>
-//         <Table>
-//           <TableHead>
-//             <TableRow>
-//               <TableCell>ID Usuario</TableCell>
-//               <TableCell>Nombre</TableCell>
-//               <TableCell>Email</TableCell>
-//               <TableCell>Rol</TableCell>
-//               <TableCell>Acciones</TableCell>
-//             </TableRow>
-//           </TableHead>
-//           <TableBody>
-//             {usuarios.map((usuario) => (
-//               <TableRow key={usuario.id_usuario}>
-//                 <TableCell>{usuario.id_usuario}</TableCell>
-//                 <TableCell>{usuario.nombre} {usuario.apellido}</TableCell>
-//                 <TableCell>{usuario.email}</TableCell>
-//                 <TableCell>{usuario.rol}</TableCell>
-//                 <TableCell>
-//                   <IconButton onClick={() => handleEdit(usuario)} color="primary">
-//                     <Edit />
-//                   </IconButton>
-//                   <IconButton onClick={() => handleDelete(usuario.id_usuario)} color="error">
-//                     <Delete />
-//                   </IconButton>
-//                 </TableCell>
-//               </TableRow>
-//             ))}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
-
-//       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-//         <DialogTitle>{currentUsuario ? 'Editar Usuario' : 'Agregar Usuario'}</DialogTitle>
-//         <DialogContent>
-//           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-//             <TextField
-//               margin="normal"
-//               name="id_usuario"
-//               label="ID Usuario"
-//               fullWidth
-//               value={formData.id_usuario}
-//               onChange={handleInputChange}
-//               required
-//               disabled={!!currentUsuario}
-//             />
-//             <TextField
-//               margin="normal"
-//               name="nombre"
-//               label="Nombre"
-//               fullWidth
-//               value={formData.nombre}
-//               onChange={handleInputChange}
-//               required
-//             />
-//             <TextField
-//               margin="normal"
-//               name="apellido"
-//               label="Apellido"
-//               fullWidth
-//               value={formData.apellido}
-//               onChange={handleInputChange}
-//               required
-//             />
-//             <TextField
-//               margin="normal"
-//               name="email"
-//               label="Email"
-//               type="email"
-//               fullWidth
-//               value={formData.email}
-//               onChange={handleInputChange}
-//               required
-//             />
-//             <TextField
-//               margin="normal"
-//               name="fecha_ingreso"
-//               label="Fecha de Ingreso"
-//               type="date"
-//               InputLabelProps={{ shrink: true }}
-//               fullWidth
-//               value={formData.fecha_ingreso}
-//               onChange={handleInputChange}
-//             />
-//             <FormControl fullWidth margin="normal">
-//               <InputLabel id="rol-label">Rol</InputLabel>
-//               <Select
-//                 labelId="rol-label"
-//                 name="rol"
-//                 value={formData.rol}
-//                 onChange={handleInputChange}
-//                 required
-//               >
-//                 <MenuItem value="pasante">Pasante</MenuItem>
-//                 <MenuItem value="administrador">Administrador</MenuItem>
-//               </Select>
-//             </FormControl>
-//           </Box>
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={handleCloseDialog}>Cancelar</Button>
-//           <Button onClick={handleSubmit} color="primary" variant="contained">
-//             {currentUsuario ? 'Actualizar' : 'Agregar'}
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </Box>
-//   );
-// };
-
-// export default Administracion;
-
-
-// import React, { useState, useEffect } from 'react';
-// import { 
-//   Box, 
-//   Typography, 
-//   Tabs, 
-//   Tab, 
-//   Paper, 
-//   Table, 
-//   TableBody, 
-//   TableCell, 
-//   TableContainer, 
-//   TableHead, 
-//   TableRow,
-//   TextField,
-//   Button,
-//   Select,
-//   MenuItem,
-//   Dialog,
-//   DialogTitle,
-//   DialogContent,
-//   DialogActions,
-//   Alert
-// } from '@mui/material';
-// import axios from 'axios';
-// import { useAuth } from '../../context/AuthContext';
-
-// const Administracion = () => {
-//   const [usuarios, setUsuarios] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
-//   const [tabValue, setTabValue] = useState(0);
-//   const [openDialog, setOpenDialog] = useState(false);
-//   const [formData, setFormData] = useState({
-//     id_usuario: '',
-//     nombre: '',
-//     apellido: '',
-//     email: '',
-//     rol: 'pasante',
-//     horario: '08:00 - 17:00'
-//   });
-//   const [error, setError] = useState('');
-//   const [success, setSuccess] = useState('');
-//   const { user } = useAuth();
-
-//   // Cargar lista de usuarios
-//   useEffect(() => {
-//     // const cargarUsuarios = async () => {
-//     //   try {
-//     //     const response = await axios.get('/api/usuarios', {
-//     //       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//     //     });
-//     //     setUsuarios(response.data);
-//     //   } catch (err) {
-//     //     setError('Error al cargar usuarios');
-//     //   }
-//     // };
-//     const cargarUsuarios = async () => {
-//       if (!user?.rol || !(user.rol === 'administrador' || user.rol === 'superadmin')) return;
-      
-//       setLoading(true);
-//       setError(null);
-      
-//       try {
-//         const response = await axios.get('/api/usuarios', {
-//           headers: { 
-//             Authorization: `Bearer ${localStorage.getItem('token')}` 
-//           }
-//         });
-        
-//         // VERIFICACIÓN ADICIONAL - AQUÍ VA EL CÓDIGO
-//         const usuariosValidos = Array.isArray(response.data) && 
-//         response.data.every(usuario => 
-//           usuario && 
-//           typeof usuario.id_usuario === 'string' &&
-//           typeof usuario.nombre === 'string' &&
-//           typeof usuario.apellido === 'string'
-//         );
-      
-//         if (!usuariosValidos) {
-//           console.error('Estructura de usuarios inválida:', response.data);
-//           throw new Error('Formato de datos incorrecto');
-//         }
-      
-//       setUsuarios(response.data);
-//       console.log('Usuarios cargados:', response.data);
-      
-//     } catch (err) {
-//       console.error('Error al cargar usuarios:', err);
-//       setError(err.response?.data?.error || 'Error al cargar usuarios');
-//       setUsuarios([]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   cargarUsuarios();
-
-//   }, [user?.rol]);
-
-//   // Manejar selección de usuario
-//   const handleSeleccionUsuario = (id) => {
-//     const usuario = usuarios.find(u => u.id_usuario === id);
-//     setUsuarioSeleccionado(usuario);
-//   };
-
-//   // Manejar cambios en el formulario
-//   const handleChange = (e) => {
-//     setFormData({ ...formData, [e.target.name]: e.target.value });
-//   };
-
-//   // Crear nuevo usuario
-//   const crearUsuario = async () => {
-//     try {
-//       await axios.post('/api/usuarios', formData, {
-//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//       });
-//       setSuccess('Usuario creado exitosamente');
-//       setOpenDialog(false);
-//       // Recargar lista
-//     } catch (err) {
-//       setError(err.response?.data?.message || 'Error al crear usuario');
-//     }
-//   };
-
-//   // Restablecer contraseña
-//   const resetearPassword = async (id) => {
-//     if (!window.confirm('¿Restablecer contraseña a valor por defecto?')) return;
-    
-//     try {
-//       await axios.put(`/api/usuarios/${id}/reset-password`, {}, {
-//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//       });
-//       setSuccess('Contraseña restablecida');
-//     } catch (err) {
-//       setError('Error al restablecer contraseña');
-//     }
-//   };
-
-//   // Eliminar usuario
-//   const eliminarUsuario = async (id) => {
-//     if (!window.confirm('¿Eliminar este usuario permanentemente?')) return;
-    
-//     try {
-//       await axios.delete(`/api/usuarios/${id}`, {
-//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//       });
-//       setSuccess('Usuario eliminado');
-//       // Recargar lista
-//     } catch (err) {
-//       setError('Error al eliminar usuario');
-//     }
-//   };
-
-//   return (
-//     <Box sx={{ p: 3 }}>
-//       <Typography variant="h4" gutterBottom>Panel de Administración</Typography>
-      
-//       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-//       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-//       <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-//         <Tab label="Gestión de Usuarios" />
-//         {user?.rol === 'superadmin' && <Tab label="Configuración Avanzada" />}
-//       </Tabs>
-
-//       <Paper sx={{ p: 2, mt: 2 }}>
-//         {tabValue === 0 && (
-//           <>
-//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-//               <Select
-//                 value={usuarioSeleccionado?.id_usuario || ''}
-//                 onChange={(e) => handleSeleccionUsuario(e.target.value)}
-//                 displayEmpty
-//                 sx={{ minWidth: 200 }}
-//               >
-//                 <MenuItem value="">Seleccionar usuario</MenuItem>
-//                 {loading ? (
-//                   <MenuItem disabled>Cargando usuarios...</MenuItem>
-//                 ) : error ? (
-//                   <MenuItem disabled>Error al cargar usuarios</MenuItem>
-//                 ) : (
-//                   usuarios.map((usuario) =>(
-//                     <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
-//                       {usuario.nombre} {usuario.apellido} ({usuario.id_usuario})
-//                     </MenuItem>
-//                   ))
-//                 )}
-//               </Select>
-              
-//               <Button 
-//                 variant="contained" 
-//                 onClick={() => setOpenDialog(true)}
-//               >
-//                 Nuevo Usuario
-//               </Button>
-//             </Box>
-
-//             {usuarioSeleccionado && (
-//               <Box sx={{ mt: 2 }}>
-//                 <Typography variant="h6">Información del Usuario</Typography>
-//                 <TableContainer>
-//                   <Table>
-//                     <TableBody>
-//                       <TableRow>
-//                         <TableCell><strong>Código:</strong></TableCell>
-//                         <TableCell>{usuarioSeleccionado.id_usuario}</TableCell>
-//                       </TableRow>
-//                       <TableRow>
-//                         <TableCell><strong>Nombre:</strong></TableCell>
-//                         <TableCell>{usuarioSeleccionado.nombre} {usuarioSeleccionado.apellido}</TableCell>
-//                       </TableRow>
-//                       <TableRow>
-//                         <TableCell><strong>Email:</strong></TableCell>
-//                         <TableCell>{usuarioSeleccionado.email}</TableCell>
-//                       </TableRow>
-//                       <TableRow>
-//                         <TableCell><strong>Rol:</strong></TableCell>
-//                         <TableCell>{usuarioSeleccionado.rol}</TableCell>
-//                       </TableRow>
-//                       <TableRow>
-//                         <TableCell><strong>Horario:</strong></TableCell>
-//                         <TableCell>{usuarioSeleccionado.horario}</TableCell>
-//                       </TableRow>
-//                     </TableBody>
-//                   </Table>
-//                 </TableContainer>
-
-//                 <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-//                   <Button 
-//                     variant="contained" 
-//                     color="warning"
-//                     onClick={() => resetearPassword(usuarioSeleccionado.id_usuario)}
-//                   >
-//                     Restablecer Contraseña
-//                   </Button>
-                  
-//                   {user?.rol === 'superadmin' && (
-//                     <Button 
-//                       variant="contained" 
-//                       color="error"
-//                       onClick={() => eliminarUsuario(usuarioSeleccionado.id_usuario)}
-//                     >
-//                       Eliminar Usuario
-//                     </Button>
-//                   )}
-//                 </Box>
-//               </Box>
-//             )}
-//           </>
-//         )}
-//       </Paper>
-
-//       {/* Diálogo para nuevo usuario */}
-//       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-//         <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-//         <DialogContent>
-//           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-//             <TextField
-//               label="Código de Usuario"
-//               name="id_usuario"
-//               value={formData.id_usuario}
-//               onChange={handleChange}
-//               required
-//             />
-//             <TextField
-//               label="Nombre"
-//               name="nombre"
-//               value={formData.nombre}
-//               onChange={handleChange}
-//               required
-//             />
-//             <TextField
-//               label="Apellido"
-//               name="apellido"
-//               value={formData.apellido}
-//               onChange={handleChange}
-//               required
-//             />
-//             <TextField
-//               label="Email"
-//               name="email"
-//               type="email"
-//               value={formData.email}
-//               onChange={handleChange}
-//               required
-//             />
-//             <Select
-//               label="Rol"
-//               name="rol"
-//               value={formData.rol}
-//               onChange={handleChange}
-//               required
-//             >
-//               <MenuItem value="pasante">Pasante</MenuItem>
-//               {user?.rol === 'superadmin' && <MenuItem value="administrador">Administrador</MenuItem>}
-//             </Select>
-//             <TextField
-//               label="Horario"
-//               name="horario"
-//               value={formData.horario}
-//               onChange={handleChange}
-//               required
-//             />
-//           </Box>
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-//           <Button onClick={crearUsuario} variant="contained">Crear</Button>
-//         </DialogActions>
-//       </Dialog>
-//     </Box>
-//   );
-// };
-
-// export default Administracion;
-
-// import React, { useState, useEffect } from 'react';
-// import { 
-//   Box, Typography, Select, MenuItem, Button, 
-//   Table, TableBody, TableCell, TableContainer, 
-//   TableHead, TableRow, Paper, Dialog, 
-//   DialogTitle, DialogContent, DialogActions, TextField,
-//   CircularProgress,
-//   Alert
-// } from '@mui/material';
-// import axios from 'axios';
-// import { useAuth } from '../../context/AuthContext';
-
-// const Administracion = () => {
-//   const { user } = useAuth();
-//   const [usuarios, setUsuarios] = useState([]);
-//   const [selectedUserId, setSelectedUserId] = useState('');
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [openDialog, setOpenDialog] = useState(false);
-//   const [newUser, setNewUser] = useState({
-//     id_usuario: '',
-//     nombre: '',
-//     apellido: '',
-//     email: '',
-//     rol: 'pasante',
-//     horario: '08:00-17:00',
-//     password: 'Temp1234'
-//   });
-
-//   // Cargar usuarios
-//   useEffect(() => {
-//     const fetchUsers = async () => {
-//       try {
-//         setLoading(true);
-//         const response = await axios.get('http://localhost:5000/api/usuarios', {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem('token')}`
-//           }
-//         });
-
-//         // Verificación robusta de la respuesta
-//         if (!response.data || !Array.isArray(response.data)) {
-//           throw new Error('Formato de respuesta inválido');
-//         }
-
-//         setUsuarios(response.data);
-//         setError(null);
-//       } catch (err) {
-//         console.error('Error al cargar usuarios:', err);
-//         setError(err.response?.data?.error || 'Error al cargar usuarios');
-//         setUsuarios([]); // Asegurar que es un array vacío
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     if (user?.rol === 'administrador' || user?.rol === 'superadmin') {
-//       fetchUsers();
-//     }
-//   }, [user]);
-
-//   // Crear nuevo usuario
-//   const handleCreateUser = async () => {
-//     try {
-//       const response = await axios.post(
-//         'http://localhost:5000/api/usuarios', 
-//         newUser,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem('token')}`
-//           }
-//         }
-//       );
-
-//       if (response.data.success) {
-//         // Recargar lista de usuarios
-//         const updatedUsers = await axios.get('http://localhost:5000/api/usuarios', {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem('token')}`
-//           }
-//         });
-//         setUsuarios(updatedUsers.data);
-//         setOpenDialog(false);
-//         setNewUser({
-//           id_usuario: '',
-//           nombre: '',
-//           apellido: '',
-//           email: '',
-//           rol: 'pasante',
-//           horario: '08:00-17:00',
-//           password: 'Temp1234'
-//         });
-//       }
-//     } catch (err) {
-//       console.error('Error al crear usuario:', err);
-//       setError(err.response?.data?.error || 'Error al crear usuario');
-//     }
-//   };
-
-//   if (!user || !['administrador', 'superadmin'].includes(user.rol)) {
-//     return (
-//       <Box sx={{ p: 3 }}>
-//         <Alert severity="error">
-//           No tienes permisos para acceder a esta sección
-//         </Alert>
-//       </Box>
-//     );
-//   }
-
-//   if (loading) {
-//     return (
-//       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-//         <CircularProgress />
-//       </Box>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <Box sx={{ p: 3 }}>
-//         <Alert severity="error">{error}</Alert>
-//         <Button 
-//           variant="contained" 
-//           sx={{ mt: 2 }}
-//           onClick={() => window.location.reload()}
-//         >
-//           Reintentar
-//         </Button>
-//       </Box>
-//     );
-//   }
-
-//   const selectedUser = usuarios.find(u => u.id_usuario === selectedUserId);
-
-//   return (
-//     <Box sx={{ p: 3, mt: 20 }}>
-//       <Typography variant="h4" gutterBottom>Panel de Administración</Typography>
-
-//       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-//         <Select
-//           value={selectedUserId}
-//           onChange={(e) => setSelectedUserId(e.target.value)}
-//           displayEmpty
-//           sx={{ minWidth: 300 }}
-//         >
-//           <MenuItem value="">Seleccionar usuario</MenuItem>
-//           {usuarios.map((usuario) => (
-//             <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
-//               {usuario.nombre} {usuario.apellido} ({usuario.rol})
-//             </MenuItem>
-//           ))}
-//         </Select>
-
-//         <Button 
-//           variant="contained" 
-//           onClick={() => setOpenDialog(true)}
-//           disabled={user.rol !== 'superadmin'}
-//         >
-//           Nuevo Usuario
-//         </Button>
-//       </Box>
-
-//       {selectedUser && (
-//         <TableContainer component={Paper}>
-//           <Table>
-//             <TableHead>
-//               <TableRow>
-//                 <TableCell>Campo</TableCell>
-//                 <TableCell>Valor</TableCell>
-//               </TableRow>
-//             </TableHead>
-//             <TableBody>
-//               {Object.entries(selectedUser).filter(([key]) => key !== 'password').map(([key, value]) => (
-//                 <TableRow key={key}>
-//                   <TableCell><strong>{key}</strong></TableCell>
-//                   <TableCell>{String(value)}</TableCell>
-//                 </TableRow>
-//               ))}
-//             </TableBody>
-//           </Table>
-//         </TableContainer>
-//       )}
-
-//       {/* Diálogo para nuevo usuario */}
-//       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-//         <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-//         <DialogContent>
-//           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-//             <TextField
-//               label="Código de Usuario"
-//               value={newUser.id_usuario}
-//               onChange={(e) => setNewUser({...newUser, id_usuario: e.target.value})}
-//               fullWidth
-//             />
-//             <TextField
-//               label="Nombre"
-//               value={newUser.nombre}
-//               onChange={(e) => setNewUser({...newUser, nombre: e.target.value})}
-//               fullWidth
-//             />
-//             <TextField
-//               label="Apellido"
-//               value={newUser.apellido}
-//               onChange={(e) => setNewUser({...newUser, apellido: e.target.value})}
-//               fullWidth
-//             />
-//             <TextField
-//               label="Email"
-//               type="email"
-//               value={newUser.email}
-//               onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-//               fullWidth
-//             />
-//             <Select
-//               label="Rol"
-//               value={newUser.rol}
-//               onChange={(e) => setNewUser({...newUser, rol: e.target.value})}
-//               fullWidth
-//             >
-//               <MenuItem value="pasante">Pasante</MenuItem>
-//               {user.rol === 'superadmin' && (
-//                 <>
-//                   <MenuItem value="administrador">Administrador</MenuItem>
-//                   <MenuItem value="superadmin">Super Admin</MenuItem>
-//                 </>
-//               )}
-//             </Select>
-//             <TextField
-//               label="Horario"
-//               value={newUser.horario}
-//               onChange={(e) => setNewUser({...newUser, horario: e.target.value})}
-//               fullWidth
-//             />
-//             <TextField
-//               label="Contraseña"
-//               type="password"
-//               value={newUser.password}
-//               onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-//               fullWidth
-//             />
-//           </Box>
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-//           <Button 
-//             onClick={handleCreateUser} 
-//             variant="contained"
-//             disabled={!newUser.id_usuario || !newUser.nombre || !newUser.password}
-//           >
-//             Crear Usuario
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </Box>
-//   );
-// };
-
-// export default Administracion;
-
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Select, MenuItem, Button, 
-  Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, Dialog, 
-  DialogTitle, DialogContent, DialogActions, TextField,
-  CircularProgress, Alert, Snackbar
+import {
+  Box, Typography, Select, MenuItem, Button,
+  TextField, CircularProgress, Alert, Snackbar, Paper, Tabs, Tab,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, InputLabel, FormControl
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { formatFullDate, formatTime } from '../../utils/dateUtils';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { calcularHorasTotales } from '../../utils/asistenciasUtils';
+
+
 
 const Administracion = () => {
   const { user } = useAuth();
@@ -821,19 +19,75 @@ const Administracion = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openResetDialog, setOpenResetDialog] = useState(false);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [newUser, setNewUser] = useState({
     id_usuario: '',
     nombre: '',
     apellido: '',
     email: '',
     rol: 'pasante',
-    horario: '08:00-17:00',
-    password: 'Temp1234'
+    horario: ''
   });
-  const [resetPassword, setResetPassword] = useState('NuevaPass123');
+  const [resetPassword, setResetPassword] = useState('');
+  
+  // Estado nuevo
+  const [editableUser, setEditableUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [mainTab, setMainTab] = useState(0); // 0=Ver Usuario, 1=Crear Usuario
+  const selectedUser = usuarios.find(u => u.id_usuario === selectedUserId);
+  
+  const [editMode, setEditMode] = useState(false);
+  
+  // === Estado para asistencias del usuario seleccionado ===
+  const [asistenciasUsuario, setAsistenciasUsuario] = useState([]);
+  const [tabAsistencias, setTabAsistencias] = useState(0);
+  const [filtroAsistencias, setFiltroAsistencias] = useState('semana');
+  const [fechaInicioAsist, setFechaInicioAsist] = useState('');
+  const [fechaFinAsist, setFechaFinAsist] = useState('');
+  const [loadingAsistencias, setLoadingAsistencias] = useState(false);
+  const [errorAsistencias, setErrorAsistencias] = useState(null);
+  
+  // === Cargar asistencias del usuario seleccionado ===
+  useEffect(() => {
+    const cargarAsistenciasUsuario = async () => {
+      if (!selectedUserId) return;
+      setLoadingAsistencias(true);
+      try {
+        const params = { 
+          filtro: filtroAsistencias,
+          ...(filtroAsistencias === 'rango' && { fechaInicio: fechaInicioAsist, fechaFin: fechaFinAsist })
+        };
+        const response = await axios.get(`http://localhost:5000/api/usuarios/${selectedUserId}/asistencias`, {
+          params,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setAsistenciasUsuario(response.data || []);
+      } catch (err) {
+        setErrorAsistencias(err.response?.data?.error || 'Error al cargar asistencias');
+      } finally {
+        setLoadingAsistencias(false);
+      }
+    };
+    cargarAsistenciasUsuario();
+  }, [selectedUserId, filtroAsistencias, fechaInicioAsist, fechaFinAsist]);
+  
+  // Calcular horas totales
+  const { horasEnteras, minutos } = calcularHorasTotales(asistenciasUsuario);
+  
+  
+  // Cuando seleccionas un usuario, clona sus datos para edición
+  useEffect(() => {
+    if (selectedUser) {
+      setEditableUser({ ...selectedUser });
+      setIsEditing(false); // al cambiar de usuario, se bloquea edición
+    }
+  }, [selectedUser]);
+
+    // Manejar cambios en inputs
+  const handleChange = (field, value) => {
+    setEditableUser(prev => ({ ...prev, [field]: value }));
+  };
 
   // Cargar usuarios
   const loadUsers = async () => {
@@ -856,28 +110,26 @@ const Administracion = () => {
     }
   }, [user]);
 
-  // Crear nuevo usuario
-  const handleCreateUser = async () => {
+  
+
+  const handleUpdateUser = async () => {
     try {
-      await axios.post('http://localhost:5000/api/usuarios', newUser, {
+      await axios.put(`http://localhost:5000/api/usuarios/${selectedUserId}`, selectedUser, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setSuccess('Usuario creado exitosamente');
-      setOpenDialog(false);
+      setSuccess('Usuario actualizado correctamente');
       loadUsers();
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al crear usuario');
+      setError(err.response?.data?.error || 'Error al actualizar usuario');
     }
   };
 
-  // Eliminar usuario
   const handleDeleteUser = async () => {
     try {
       await axios.delete(`http://localhost:5000/api/usuarios/${selectedUserId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSuccess('Usuario eliminado exitosamente');
-      setOpenDeleteDialog(false);
       setSelectedUserId('');
       loadUsers();
     } catch (err) {
@@ -885,22 +137,46 @@ const Administracion = () => {
     }
   };
 
-  // Resetear contraseña
   const handleResetPassword = async () => {
     try {
-      await axios.put(
+      if (!selectedUserId) return;
+
+      const response = await axios.post(
         `http://localhost:5000/api/usuarios/${selectedUserId}/reset-password`,
-        { newPassword: resetPassword },
+        {}, // no necesitas enviar nada, el backend genera la contraseña
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
-      setSuccess('Contraseña restablecida exitosamente');
-      setOpenResetDialog(false);
+
+      const { tempPassword } = response.data;
+      setSuccess(`Contraseña restablecida exitosamente. Nueva contraseña: ${tempPassword}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Error al restablecer contraseña');
     }
   };
 
-  const selectedUser = usuarios.find(u => u.id_usuario === selectedUserId);
+  const handleCreateUser = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/usuarios', newUser, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const { tempPassword } = response.data;
+
+      // Mostrar mensaje de éxito con la contraseña generada
+      setSuccess(`Usuario creado exitosamente. Contraseña temporal: ${tempPassword}`);
+
+      // Recargar lista de usuarios sin limpiar el formulario
+      loadUsers();
+
+      // Opcional: puedes actualizar el objeto newUser con la contraseña generada para mostrarla
+      setNewUser(prev => ({ ...prev, password: tempPassword }));
+
+      // No cambiamos de tab ni reseteamos el formulario
+      // setMainTab(0); // <-- eliminamos esto
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al crear usuario');
+    }
+  };
 
   if (!user || !['administrador', 'superadmin'].includes(user.rol)) {
     return (
@@ -918,201 +194,417 @@ const Administracion = () => {
     );
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
-    <Box sx={{ p: 3, mt: 20 }}>
-      <Typography variant="h4" gutterBottom>Panel de Administración</Typography>
+    <Box sx={{ 
+      p: 3, 
+      maxWidth: '1200px', 
+      mx: 'auto',
+      // backgroundColor: 'background.paper'
+    }}>
+      <Typography variant="h4" gutterBottom>Administración de Pasantes</Typography>
 
-      {/* Selector de usuarios y botones de acción */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-        <Select
-          value={selectedUserId}
-          onChange={(e) => setSelectedUserId(e.target.value)}
-          displayEmpty
-          sx={{ minWidth: 300 }}
-        >
-          <MenuItem value="">Seleccionar usuario</MenuItem>
-          {usuarios.map((usuario) => (
-            <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
-              {usuario.nombre} {usuario.apellido} ({usuario.rol})
-            </MenuItem>
-          ))}
-        </Select>
+      {/* Pestañas principales */}
+      <Box sx={{ mb: 2 }}>
+        <Tabs value={mainTab} onChange={(e, val) => setMainTab(val)} TabIndicatorProps={{ style: { backgroundColor: '#9B2EF4' } }}>
+          <Tab label="Ver Usuario" sx={{ '&.Mui-selected': { color: '#9B2EF4' } }} />
+          <Tab label="Crear Usuario" sx={{ '&.Mui-selected': { color: '#9B2EF4' } }} />
+        </Tabs>
+      </Box>
 
-        {user.rol === 'superadmin' && (
-          <Button 
-            variant="contained" 
-            onClick={() => setOpenDialog(true)}
+      {mainTab === 0 && (
+        <>
+
+        {/* Selector de usuario */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
+          <Select
+            value={selectedUserId}
+            onChange={(e) => {
+              setSelectedUserId(e.target.value);
+              if (!e.target.value) setEditableUser(null); // si selecciona "Seleccionar usuario", limpia panel
+            }}
+            displayEmpty
+            sx={{ minWidth: 250 }}
           >
-            Nuevo Usuario
-          </Button>
-        )}
-
-        {selectedUserId && (
-          <>
-            <Button 
-              variant="contained" 
-              color="warning"
-              onClick={() => setOpenResetDialog(true)}
-            >
-              Resetear Contraseña
-            </Button>
-            
-            {user.rol === 'superadmin' && (
-              <Button 
-                variant="contained" 
-                color="error"
-                onClick={() => setOpenDeleteDialog(true)}
-              >
-                Eliminar Usuario
+            <MenuItem value="">Seleccionar usuario</MenuItem>
+            {usuarios.map(u => (
+              <MenuItem key={u.id_usuario} value={u.id_usuario}>
+                {u.nombre} {u.apellido} ({u.rol})
+              </MenuItem>
+            ))}
+          </Select>
+          {selectedUserId && (
+            <>
+              <Button variant="contained" color="warning" onClick={() => handleResetPassword('')}>
+                Resetear Contraseña
               </Button>
-            )}
-          </>
+              {user.rol === 'superadmin' && (
+                <Button variant="contained" color="error" onClick={handleDeleteUser}>
+                  Eliminar Usuario
+                </Button>
+              )}
+            </>
+          )}
+
+        </Box> 
+
+        {/* Información del usuario seleccionado */}
+  {editableUser && (
+    <Paper elevation={3} sx={{ p: 3, mb: 3, position: "relative" }}>
+      <Typography variant="h6" gutterBottom>Datos del Usuario</Typography>
+
+      {/* Botón Editar/Cancelar en esquina superior derecha */}
+      <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+        {!isEditing ? (
+          <Button variant="outlined" onClick={() => setIsEditing(true)}>Editar</Button>
+        ) : (
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              setEditableUser({ ...selectedUser }); // restaurar datos originales
+              setIsEditing(false);
+            }}
+          >
+            Cancelar
+          </Button>
         )}
       </Box>
 
-      {/* Detalles del usuario seleccionado */}
-      {selectedUser && (
-        <TableContainer component={Paper} sx={{ mb: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Campo</TableCell>
-                <TableCell>Valor</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.entries(selectedUser).filter(([key]) => key !== 'password').map(([key, value]) => (
-                <TableRow key={key}>
-                  <TableCell><strong>{key}</strong></TableCell>
-                  <TableCell>{String(value)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+        <TextField
+          label="Código"
+          value={editableUser.id_usuario}
+          fullWidth
+          disabled={!isEditing}
+          onChange={(e) => handleChange("id_usuario", e.target.value)}
+        />
+        <TextField
+          label="Nombre"
+          value={editableUser.nombre}
+          fullWidth
+          disabled={!isEditing}
+          onChange={(e) => handleChange("nombre", e.target.value)}
+        />
+        <TextField
+          label="Apellido"
+          value={editableUser.apellido}
+          fullWidth
+          disabled={!isEditing}
+          onChange={(e) => handleChange("apellido", e.target.value)}
+        />
+        <TextField
+          label="Email"
+          value={editableUser.email}
+          fullWidth
+          disabled={!isEditing}
+          onChange={(e) => handleChange("email", e.target.value)}
+        />
 
-      {/* Diálogo para nuevo usuario */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+        {/* Campo Horario */}
+        <TextField
+          label="Horario"
+          value={editableUser.horario || ''}
+          fullWidth
+          disabled={!isEditing}
+          onChange={(e) => handleChange("horario", e.target.value)}
+          multiline
+          minRows={isEditing ? 4 : 1} // más grande cuando edites
+          InputProps={{
+            readOnly: !isEditing,
+          }}
+          sx={{
+            '& .MuiInputBase-input.Mui-disabled': {
+              WebkitTextFillColor: 'inherit', // mantiene el color del texto en modo disabled
+              whiteSpace: 'pre-line',         // respeta los saltos de línea
+            },
+          }}
+        />
+
+        <TextField
+          label="Rol"
+          value={editableUser.rol}
+          fullWidth
+          disabled={!isEditing}
+          onChange={(e) => handleChange("rol", e.target.value)}
+        />
+      </Box>
+
+      {/* Guardar cambios solo si está en edición */}
+      {isEditing && (
+        <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={async () => {
+              try {
+                await axios.put(`http://localhost:5000/api/usuarios/${editableUser.id_usuario}`, editableUser, {
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                setSuccess('Usuario actualizado correctamente');
+                setIsEditing(false);
+                loadUsers();
+              } catch (err) {
+                setError(err.response?.data?.error || 'Error al actualizar usuario');
+              }
+            }}
+          >
+            Guardar Cambios
+          </Button>
+        </Box>
+      )}
+    </ Paper>
+  )}
+
+    <Paper elevation={3} sx={{ p : 1, pb : 2 }}>
+
+    {/* Último ingreso */}
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">Último Ingreso:</Typography>
+          {asistenciasUsuario.length > 0 ? (() => {
+            const ultimo = [...asistenciasUsuario].sort((a,b)=>new Date(b.hora_entrada)-new Date(a.hora_entrada))[0];
+            return (
+              <>
+                <Typography> <strong>Fecha:</strong> {formatFullDate(ultimo.hora_entrada)}</Typography>
+                <Typography><strong>Hora Entrada:</strong> {formatTime(ultimo.hora_entrada)}</Typography>
+                {ultimo.hora_salida && <Typography><strong>Hora Salida:</strong> {formatTime(ultimo.hora_salida)}</Typography>}
+                <Typography><strong>Duración:</strong> {(
+                                    (new Date(ultimo.hora_salida) - new Date(ultimo.hora_entrada)) / (1000 * 60 * 60)
+                                  ).toFixed(2)} horas</Typography>
+              </>
+            )
+          })() : <Typography>No hay registros</Typography>}
+        </Box>
+            </Paper>
+
+            {/* Futura descarga de reporte */}
+                  <Paper elevation={3} sx={{ p: 2, mt: 3 }}>
+                    <Typography fontSize={20}><strong>Horas acumuladas totales:</strong> {horasEnteras} horas y {minutos} minutos</Typography>
+                  </Paper>
+
+{/* ===========================
+         BLOQUE DE REGISTRO DE ASISTENCIAS
+       =========================== */}
+    {selectedUserId && (
+      <Box sx={{ mt: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, mt : 4 }}>
+          <Typography variant="h5" gutterBottom>Registro de Asistencias</Typography>
+
+          {/* Filtros */}
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
-              label="Código de Usuario"
+              select
+              label="Filtrar por"
+              value={filtroAsistencias}
+              onChange={(e) => setFiltroAsistencias(e.target.value)}
+              sx={{ minWidth: 120 }}
+            >
+              <MenuItem value="semana">Semana actual</MenuItem>
+              <MenuItem value="mes">Mes actual</MenuItem>
+              <MenuItem value="semestre">Último semestre</MenuItem>
+              <MenuItem value="rango">Rango personalizado</MenuItem>
+            </TextField>
+
+            {filtroAsistencias === 'rango' && (
+              <>
+                <TextField label="Fecha inicio" type="date" InputLabelProps={{ shrink: true }} value={fechaInicioAsist} onChange={(e) => setFechaInicioAsist(e.target.value)} />
+                <TextField label="Fecha fin" type="date" InputLabelProps={{ shrink: true }} value={fechaFinAsist} onChange={(e) => setFechaFinAsist(e.target.value)} />
+              </>
+            )}
+          </Box>
+
+          {/* Pestañas Tabla / Gráfico */}
+          <Tabs value={tabAsistencias} onChange={(e,val)=>setTabAsistencias(val)} sx={{ mb: 2 }} TabIndicatorProps={{
+              style: { backgroundColor: '#9B2EF4' } 
+            }}>
+            <Tab label="Tabla" sx={{'&.Mui-selected': { color: '#9B2EF4' }}}/>
+            <Tab label="Gráfico" sx={{'&.Mui-selected': { color: '#9B2EF4' }}}/>
+          </Tabs>
+
+          {/* Contenido según pestaña */}
+          {loadingAsistencias ? (
+            <Box sx={{ display:'flex', justifyContent:'center', p : 4 }}><CircularProgress /></Box>
+          ) : tabAsistencias === 0 ? (
+            <TableContainer sx={{ maxHeight: 500, overflow: 'auto' }}>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="center">Fecha</TableCell>
+                    <TableCell align="center">Hora Entrada</TableCell>
+                    <TableCell align="center">Hora Salida</TableCell>
+                    <TableCell align="center">Horas trabajadas</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {asistenciasUsuario.length > 0 ? asistenciasUsuario.map(reg => (
+                    <TableRow key={reg.id_registro}>
+                      <TableCell align="center">{formatFullDate(reg.hora_entrada)}</TableCell>
+                      <TableCell align="center">{formatTime(reg.hora_entrada)}</TableCell>
+                      <TableCell align="center">{reg.hora_salida ? formatTime(reg.hora_salida) : '--'}</TableCell>
+                      <TableCell align="center">{reg.hora_salida ? ((new Date(reg.hora_salida)-new Date(reg.hora_entrada))/(1000*60*60)).toFixed(2) : '--'}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">No hay registros</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Box sx={{ height: 400, overflow: 'hidden' }}>
+  <ResponsiveContainer width="100%" height="100%">
+    <BarChart
+      data={[...asistenciasUsuario]
+        .map(reg => ({
+          diaNumero: new Date(reg.hora_entrada).getDate(),
+          fecha: reg.hora_entrada,
+          horas: reg.hora_salida
+            ? (new Date(reg.hora_salida) - new Date(reg.hora_entrada)) / (1000 * 60 * 60)
+            : 0
+        }))
+        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))} // 🔹 Ordenar por fecha
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis
+        dataKey="diaNumero"
+        label={{ value: "Día del mes", position: "bottom", dx: -30, dy: -30, style: { fontFamily: "Poppins", fontSize: 18 } }}
+        height={55}
+        tick={{ style: { fontFamily: "Poppins", fontSize: 17 } }}
+      />
+      <YAxis
+        label={{
+          value: "Cantidad de horas",
+          angle: -90,
+          position: "outsideLeft",
+          dx: -20,
+          style: { fontFamily: "Poppins", fontSize: 18 }
+        }}
+        tick={{ style: { fontFamily: "Poppins", fontSize: 17 } }}
+      />
+      <Tooltip
+        content={({ payload }) => {
+          if (payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+              <div
+                style={{
+                  backgroundColor: "#fff",
+                  color: "#9B2EF4",
+                  padding: "5px",
+                  border: "1px solid #8604f7ff",
+                  fontFamily: "Poppins",
+                  fontSize: 14,
+                  borderRadius: 5,
+                }}
+              >
+                <div><strong>Fecha:</strong> {formatFullDate(data.fecha)}</div>
+                <div><strong>Horas trabajadas:</strong> {data.horas.toFixed(2)}</div>
+              </div>
+            );
+          }
+          return null;
+        }}
+      />
+      <Legend wrapperStyle={{ fontFamily: "Poppins", fontSize: 18 }}/>
+      <Bar 
+        dataKey="horas" 
+        name="Horas trabajadas por día" 
+        fill="#8884d8" 
+        barSize={20}
+      />
+    </BarChart>
+  </ResponsiveContainer>
+</Box>
+
+          )}
+
+        </Paper>
+      </Box>
+    )}
+
+  
+</>
+)}
+
+{mainTab === 1 && (
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>Crear Nuevo Usuario</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <TextField
+              label="Código Único"
+              placeholder="Ej: 202521932"
               value={newUser.id_usuario}
-              onChange={(e) => setNewUser({...newUser, id_usuario: e.target.value})}
-              fullWidth
+              onChange={(e) => setNewUser({ ...newUser, id_usuario: e.target.value })}
             />
             <TextField
               label="Nombre"
+              placeholder="Ej: James"
               value={newUser.nombre}
-              onChange={(e) => setNewUser({...newUser, nombre: e.target.value})}
-              fullWidth
+              onChange={(e) => setNewUser({ ...newUser, nombre: e.target.value })}
             />
             <TextField
               label="Apellido"
+              placeholder="Ej: Hetfield"
               value={newUser.apellido}
-              onChange={(e) => setNewUser({...newUser, apellido: e.target.value})}
-              fullWidth
+              onChange={(e) => setNewUser({ ...newUser, apellido: e.target.value })}
             />
             <TextField
               label="Email"
-              type="email"
+              placeholder="Ej: james.hetfield@epn.edu.ec"
               value={newUser.email}
-              onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            />
+            <TextField
+              label="Horario"
+              placeholder={`Lunes: 09:00-11:00\nMartes: 14:00-16:00\nMiércoles: 10:00-13:00`}
+              value={newUser.horario}
+              onChange={(e) => setNewUser({ ...newUser, horario: e.target.value })}
+              multiline
+              rows={4}
               fullWidth
             />
-            <Select
+            <TextField
+              select
               label="Rol"
               value={newUser.rol}
-              onChange={(e) => setNewUser({...newUser, rol: e.target.value})}
               fullWidth
+              onChange={(e) => setNewUser({ ...newUser, rol: e.target.value })}
             >
               <MenuItem value="pasante">Pasante</MenuItem>
               <MenuItem value="administrador">Administrador</MenuItem>
-              {user.rol === 'superadmin' && (
-                <MenuItem value="superadmin">Super Admin</MenuItem>
-              )}
-            </Select>
-            <TextField
-              label="Horario"
-              value={newUser.horario}
-              onChange={(e) => setNewUser({...newUser, horario: e.target.value})}
-              fullWidth
-            />
-            <TextField
-              label="Contraseña"
-              type="password"
-              value={newUser.password}
-              onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-          <Button 
-            onClick={handleCreateUser} 
-            variant="contained"
-            disabled={!newUser.id_usuario || !newUser.nombre || !newUser.password}
-          >
-            Crear
-          </Button>
-        </DialogActions>
-      </Dialog>
+            </TextField>
 
-      {/* Diálogo para resetear contraseña */}
-      <Dialog open={openResetDialog} onClose={() => setOpenResetDialog(false)}>
-        <DialogTitle>Resetear Contraseña</DialogTitle>
-        <DialogContent>
+          </Box>
           <Box sx={{ mt: 2 }}>
-            <TextField
-              label="Nueva Contraseña"
-              type="password"
-              value={resetPassword}
-              onChange={(e) => setResetPassword(e.target.value)}
-              fullWidth
-            />
+            <Button variant="contained" color="primary" onClick={handleCreateUser}>Crear Usuario</Button>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenResetDialog(false)}>Cancelar</Button>
-          <Button onClick={handleResetPassword} variant="contained">
-            Confirmar
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Paper>
+      )}
 
-      {/* Diálogo para eliminar usuario */}
-      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirmar Eliminación</DialogTitle>
-        <DialogContent>
-          <Typography>
-            ¿Estás seguro de eliminar al usuario {selectedUser?.nombre}?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
-          <Button onClick={handleDeleteUser} variant="contained" color="error">
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Notificaciones */}
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-      >
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
         <Alert severity="error">{error}</Alert>
       </Snackbar>
-      
-      <Snackbar
-        open={!!success}
-        autoHideDuration={6000}
-        onClose={() => setSuccess(null)}
-      >
+      <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess(null)}>
         <Alert severity="success">{success}</Alert>
       </Snackbar>
     </Box>

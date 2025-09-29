@@ -35,6 +35,8 @@
 
 /* Estilos para los botones */
 .button {
+    display: inline-flex;
+    align-items: center; /* Alinea verticalmente icono + texto */
     color: white !important; /*Color del texto (forzado) */
     background-color: transparent !important; /* Fondo transparente */
     border: none; /* Sin borde */
