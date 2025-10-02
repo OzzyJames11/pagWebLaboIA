@@ -114,12 +114,6 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Credenciales inválidas' });
     }
 
-    // === 🔒 FUTURO: HASH ===
-    // if (user.password?.startsWith('$2')) {
-    //   const ok = await bcrypt.compare(password, user.password);
-    //   if (!ok) return res.status(400).json({ message: 'Credenciales inválidas' });
-    // }
-
     const token = jwt.sign(
       { id_usuario: user.id_usuario, rol: user.rol },
       process.env.JWT_SECRET || 'mi_super_secreto',
