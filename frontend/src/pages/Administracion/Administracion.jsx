@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Select, MenuItem, Button,
+  Box, Typography, Select, Menu, MenuItem, Button, IconButton,
   TextField, CircularProgress, Alert, Snackbar, Paper, Tabs, Tab,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, InputLabel, FormControl
 } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { formatFullDate, formatTime } from '../../utils/dateUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { calcularHorasTotales } from '../../utils/asistenciasUtils';
 import { exportUserAsCsv } from '../../utils/exportCsv';
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Tooltip as MuiTooltip } from '@mui/material';
 
 
 const Administracion = () => {
@@ -48,7 +51,10 @@ const Administracion = () => {
   const [fechaFinAsist, setFechaFinAsist] = useState('');
   const [loadingAsistencias, setLoadingAsistencias] = useState(false);
   const [errorAsistencias, setErrorAsistencias] = useState(null);
-  
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
   // === Cargar asistencias del usuario seleccionado ===
   useEffect(() => {
     const cargarAsistenciasUsuario = async () => {
@@ -125,18 +131,43 @@ const Administracion = () => {
     }
   };
 
+  // const handleDeleteUser = async () => {
+  //   try {
+  //     await axios.delete(`http://localhost:5000/api/usuarios/${selectedUserId}`, {
+  //       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  //     });
+  //     setSuccess('Usuario eliminado exitosamente');
+  //     setSelectedUserId('');
+  //     loadUsers();
+  //   } catch (err) {
+  //     setError(err.response?.data?.error || 'Error al eliminar usuario');
+  //   }
+  // };
+
   const handleDeleteUser = async () => {
     try {
       await axios.delete(`http://localhost:5000/api/usuarios/${selectedUserId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+
+      // mostrás la notificación bonita que ya usás
       setSuccess('Usuario eliminado exitosamente');
-      setSelectedUserId('');
-      loadUsers();
+
+      // Limpieza de estado importante para evitar UI inconsistente
+      setOpenDeleteDialog(false);      // cierra el diálogo de confirmación
+      setAnchorEl(null);               // cierra el menu "más opciones"
+      setEditableUser(null);           // quita los datos del panel
+      setAsistenciasUsuario([]);       // limpia asistencias cargadas
+      setSelectedUserId('');           // quita selección del selector
+      setTabAsistencias(0);            // opcional: volver a la pestaña 0
+      loadUsers();                     // recargar lista (para reflejar el cambio)
+
     } catch (err) {
       setError(err.response?.data?.error || 'Error al eliminar usuario');
     }
   };
+
+
 
   const handleResetPassword = async () => {
     try {
@@ -157,7 +188,39 @@ const Administracion = () => {
 
   const handleCreateUser = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/usuarios', newUser, {
+      // === Validaciones previas ===
+      const trimmedUser = {
+        id_usuario: newUser.id_usuario.trim(),
+        nombre: newUser.nombre.trim(),
+        apellido: newUser.apellido.trim(),
+        email: newUser.email.trim(),
+        rol: newUser.rol.trim(),
+        horario: newUser.horario.trim(),
+      };
+
+      // === Validaciones ===
+      // Código único: obligatorio, solo números, máximo 9 dígitos
+      if (!trimmedUser.id_usuario) return setError("El Código Único es obligatorio.");
+      if (!/^\d{9}$/.test(trimmedUser.id_usuario)) return setError('El Código Único debe contener solo números y deben ser 9 dígitos.');
+      
+      // Nombre: obligatorio, solo letras, máximo 30 caracteres
+      if (!trimmedUser.nombre) return setError("El Nombre es obligatorio.");
+      if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(trimmedUser.nombre)) return setError('El Nombre solo puede contener letras.');
+      if (trimmedUser.nombre.length > 30) return setError('El Nombre no puede superar 30 caracteres.');
+
+      // Apellido: obligatorio, solo letras, máximo 30 caracteres
+      if (!trimmedUser.apellido) return setError("El apellido es obligatorio.");
+      if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(trimmedUser.apellido)) return setError('El Apellido solo puede contener letras.');
+      if (trimmedUser.apellido.length > 30) return setError('El Apellido no puede superar 30 caracteres.');
+
+      // Correo: obligatorio, debe terminar en @epn.edu.ec
+      if (!trimmedUser.email) return setError("El Correo es obligatorio.");
+      if (!/^[\w.-]+@epn\.edu\.ec$/.test(trimmedUser.email)) return setError('El Correo debe tener dominio @epn.edu.ec.');
+      
+      // Rol: obligatorio y debe ser 'pasante' o 'administrador'
+      if (!trimmedUser.rol) return setError("El Rol es obligatorio.");
+      
+      const response = await axios.post('http://localhost:5000/api/usuarios', trimmedUser, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -548,8 +611,51 @@ const Administracion = () => {
           </Box>
         </Paper>
       </Box>
+
+
+
+
+
     )}
 
+
+{selectedUserId && user.rol === 'administrador' && (
+<Paper elevation={3} sx={{ p: 2, mt: 3 }}>
+  <Typography fontSize={20}><strong>Eliminar Usuario</strong></Typography>
+  <>
+    {/* <MuiTooltip title="Eliminar usuario"> */}
+      <IconButton
+        color="white"
+        onClick={() => setOpenDeleteDialog(true)}
+        sx={{
+            mt: 1,
+            transition: 'transform 0.15s ease, color 0.15s ease',
+            '&:hover': {
+              transform: 'rotate(-15deg) translateY(-2px)',
+              color: '#ff0000ff', // rojo oscuro para enfatizar peligro
+            },
+          }}
+        >
+        <DeleteIcon />
+      </IconButton>
+    {/* </MuiTooltip> */}
+
+    <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+      <DialogTitle>Confirmar eliminación</DialogTitle>
+      <DialogContent>
+        <Typography>
+          ¿Estás seguro de eliminar a <strong>{editableUser?.nombre} {editableUser?.apellido}</strong>?<br/>
+          Esta acción no se puede deshacer.
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
+        <Button color="error" variant="contained" onClick={handleDeleteUser}>Eliminar</Button>
+      </DialogActions>
+    </Dialog>
+  </>
+</Paper>
+)}
   
 </>
 )}

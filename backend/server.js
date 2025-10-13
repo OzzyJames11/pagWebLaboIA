@@ -104,7 +104,7 @@ const checkAdmin = (req, res, next) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { id_usuario, password } = req.body;
-    const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
+    const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1 AND activo = true', [id_usuario]);
 
     if (result.rows.length === 0) return res.status(400).json({ message: 'Credenciales inválidas' });
     const user = result.rows[0];
@@ -343,7 +343,7 @@ app.post('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, asyn
 // Ruta protegida para obtener datos del usuario actual
 app.get('/api/me', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query('SELECT id_usuario, nombre, apellido, email, rol, horario FROM usuarios WHERE id_usuario = $1', [req.user.id_usuario]);
+        const result = await pool.query('SELECT id_usuario, nombre, apellido, email, rol, horario FROM usuarios WHERE id_usuario = $1 AND activo = true', [req.user.id_usuario]);
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -368,6 +368,7 @@ app.get('/api/usuarios', authenticateToken, async (req, res) => {
       let query = `
         SELECT id_usuario, nombre, apellido, email, rol, horario 
         FROM usuarios
+        WHERE activo = true
       `;
       const params = [];
       
@@ -394,7 +395,7 @@ app.get('/api/usuarios', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'SELECT id_usuario, nombre, apellido, email, rol, horario FROM usuarios WHERE id_usuario = $1',
+      'SELECT id_usuario, nombre, apellido, email, rol, horario FROM usuarios WHERE id_usuario = $1 AND activo = true',
       [id]
     );
     if (result.rows.length === 0) {
@@ -461,6 +462,16 @@ app.get('/api/usuarios/:id/asistencias', authenticateToken, async (req, res) => 
     // Solo admins o superadmins pueden ver asistencias de otros
     if (!['administrador', 'superadmin'].includes(req.user.rol)) {
       return res.status(403).json({ error: 'No tienes permisos' });
+    }
+
+    // Validación previa: comprobar si el usuario existe y está activo
+    const userCheck = await pool.query(
+      'SELECT 1 FROM usuarios WHERE id_usuario = $1 AND activo = true',
+      [id]
+    );
+
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario inactivo o no encontrado' });
     }
 
     let query = `
@@ -608,17 +619,46 @@ app.put('/api/usuarios/:id', authenticateToken, async (req, res) => {
 });
 
   
-// Eliminar usuario (solo superadmin)
-app.delete('/api/usuarios/:id', authenticateToken, checkSuperAdmin, async (req, res) => {
-    try {
-        const { id } = req.params;
-        await pool.query('DELETE FROM usuarios WHERE id_usuario = $1', [id]);
-        res.json({ success: true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al eliminar usuario' });
+// // Eliminar (desactivar) usuario (solo admin)
+// app.delete('/api/usuarios/:id', authenticateToken, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     // Solo permitir si el usuario autenticado es admin
+//     if (req.user.rol !== 'administrador') {
+//       return res.status(403).json({ error: 'No tienes permisos para eliminar usuarios' });
+//     }
+
+//     // En lugar de borrar físicamente:
+//     await pool.query('UPDATE usuarios SET activo = false WHERE id_usuario = $1', [id]);
+
+//     res.json({ success: true, message: 'Usuario desactivado correctamente' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Error al eliminar usuario' });
+//   }
+// });
+
+// Eliminar usuario (soft delete) — solo admins o superadmins
+app.delete('/api/usuarios/:id', authenticateToken, checkAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Opcional: evitar que un admin se borre a sí mismo
+    if (req.user.id_usuario === id) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta' });
     }
+
+    // Soft delete: marcar activo = false
+    await pool.query('UPDATE usuarios SET activo = false WHERE id_usuario = $1', [id]);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al eliminar usuario' });
+  }
 });
+
   
 // function generarPasswordTemporal() {
 //     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';

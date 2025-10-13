@@ -198,7 +198,28 @@ CQ6kU9MWk4
 ZQsmkswFeL
 uvsn9s
 
-DELETE FROM usuarios WHERE id_usuario = 'P005';
+DELETE FROM usuarios WHERE id_usuario = '202098765';
+
+-- columna para implementar el soft delete
+ALTER TABLE usuarios ADD COLUMN activo BOOLEAN DEFAULT true;
+
+
+-- regresar del soft delete a un usuario
+UPDATE usuarios SET activo = true WHERE id_usuario = '201820543';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

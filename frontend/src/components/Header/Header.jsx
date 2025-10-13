@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Dehaze } from '@mui/icons-material';
 // import headerLogo from '../../assets/img/header_logo.png';
 import epnLogo from '../../assets/img/logo-epn-white.png';
-import laboIALogo from '../../assets/img/iconoLaboIA.jpeg';
+import laboIALogo from '../../assets/img/iconoLaboIA_R2.png';
 import HeaderLinks from './Header.links'; // Importa el componente de enlaces
 import styles from '../../assets/css/header.module.css'; // Importa los estilos del Header
 
