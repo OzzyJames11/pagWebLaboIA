@@ -1,70 +1,117 @@
 /* Estilos para el footer */
 .footer {
-  width: 100%; /* Ocupa todo el ancho */
-  padding: 1rem 0; /* Reducimos el padding vertical */
-  color: #FFF;
-  background-color: #18052F;
-  position: relative; /* Cambia a relative para que esté en el flujo normal */
-  z-index: 1000; /* Asegura que esté por encima de otros elementos */
-  margin-top: auto; /* Empuja el footer al final */
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
-  min-width: 360px; /* Ancho mínimo */
+  width: 100%;
+  padding: 0.45rem 0; /* aún más compacto */
+  color: #fff;
+  background-color: #0f031e;
+  position: relative;
+  z-index: 1000;
+  margin-top: auto;
+  box-sizing: border-box;
+  min-width: 360px;
 }
 
-
-/* Estilos para el logo */
-.logo {
-  display: flex;
-  justify-content: center;
-}
-
-/* Estilos para el elemento init */
-/* .init {
-  display: inline-block;
-  bottom: -4px;
-} */
-
-/* Estilos para el contenido */
+/* Contenido principal */
 .content {
   background-color: #ffffffcc;
   box-shadow: 0px 3px 6px #00000029;
-  padding: 24px 0;
-  color: black;
-  width: 90%; /* Ancho ligeramente menor que el footer */
-  max-width: 1200px; /* Ancho máximo del contenido */
-  margin: 0 auto; /* Centrar el contenido */
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
-  border-radius: 8px; /* Bordes redondeados para mejor estética */
+  padding: 14px 16px; /* menos padding vertical y horizontal */
+  color: #000;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  border-radius: 8px;
+  /* Variable para controlar gap horizontal entre columnas principales */
+  --footer-col-gap: 120px; /* <--- Ajusta este valor para acercar/separar columnas */
 }
 
-/* Estilos para el copyright */
+/* Ajuste adicional: el Grid principal (CustomGrid2) puede usar gap via sx */
+.content .MuiGrid2-root {
+  margin-bottom: 0.25rem;
+}
+
+/* Redes sociales: grid interno */
+.socialGrid {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+
+/* Cada columna interna de redes muestra 3 iconos en vertical (compacto) */
+.socialColumn {
+  display: flex;
+  flex-direction: column;
+  row-gap: 6px;
+  align-items: flex-start;
+}
+
+/* Enlaces de redes sociales (solo icono) */
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;   /* tamaño cuadrado para ícono */
+  height: 28px;
+  text-decoration: none;
+  color: #0f031e; /* color base del icono dentro del bloque blanco */
+  transition: color 0.15s ease, transform 0.08s ease;
+  border-radius: 4px;
+}
+
+/* Pequeña animación al hover */
+.socialLink:hover {
+  transform: translateY(-2px);
+}
+
+/* Colores hover específicos por icon class (usados en JSX via className en icon components) */
+.iconFacebook:hover,
+.socialLink[title="Facebook"]:hover {
+  color: #1877f2;
+}
+.iconLinkedin:hover,
+.socialLink[title="LinkedIn"]:hover {
+  color: #0a66c2;
+}
+.iconYoutube:hover,
+.socialLink[title="YouTube"]:hover {
+  color: #ff0000;
+}
+.iconInstagram:hover,
+.socialLink[title="Instagram"]:hover {
+  color: #e1306c;
+}
+.iconTiktok:hover,
+.socialLink[title="TikTok"]:hover {
+  color: #6300b4;
+}
+.iconWeb:hover,
+.socialLink[title="Sitio Web"]:hover {
+  color: #3f51b5;
+}
+
+/* Copyright */
 .coppyRight {
-  padding: 0.4rem 0; /* Reducimos el padding vertical */
-  background-color: #18052F; /* Fondo del copyright */
-  color: white; /* Color del texto */
-  width: 100%; /* Ocupa todo el ancho */
-  text-align: center; /* Centrar el texto */
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+  padding: 0.55rem 0;
+  background-color: #0f031e;
+  color: white;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  font-size: 0.9rem;
 }
 
-/* .footer p,
-.footer h1,
-.footer h2,
-.footer h3,
-.footer h4,
-.footer h5,
-.footer h6,
-.footer a,
-.footer span {
-  font-family: 'Poppins', Arial, sans-serif;
-} */
+/* Responsive */
+@media (max-width: 600px) {
+  .footer {
+    text-align: center;
+  }
 
+  .content {
+    padding: 12px 10px;
+  }
 
-/* Estilos para el contenido del footer */
-/* .footer .content {
-  background-color: #FFF; 
-  box-shadow: 0px 3px 6px #00000029; 
-  padding: 24px 0;
-  color: black;
-} */
-
+  .socialColumn {
+    align-items: center;
+  }
+}

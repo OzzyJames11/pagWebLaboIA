@@ -22,7 +22,7 @@ import axios from 'axios';
 import { formatFullDate, formatTime } from '../../utils/dateUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { calcularHorasTotales } from '../../utils/asistenciasUtils';
-
+import { exportUserAsCsv } from '../../utils/exportCsv';
 
 const DatosPasante = () => {
   const { user, ultimoRegistro } = useAuth();
@@ -59,6 +59,20 @@ const DatosPasante = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
+        //log
+        console.log('DEBUG - user object (from useAuth):', user);
+        // imprime el user en forma legible:
+        try {
+          console.log('DEBUG - user (string):', JSON.stringify(user, null, 2));
+        } catch (e) { /* ignore circular */ }
+
+        // imprime las primeras 5 asistencias (o [] si no hay)
+        console.log('DEBUG - asistencias recibidas (primeras 5):', response.data ? response.data.slice(0,5) : []);
+        try {
+          console.log('DEBUG - asistencias (string):', JSON.stringify((response.data || []).slice(0,5), null, 2));
+        } catch (e) { /* ignore circular */ }
+
+
         
         // Verifica la estructura de los datos recibidos
         console.log('Datos de asistencia:', response.data);
@@ -408,6 +422,10 @@ const DatosPasante = () => {
               )}
             </Box>
           )}
+
+          <Box sx={{ mt: 2 }}>
+                <Button variant="outlined" onClick={() => exportUserAsCsv(user, asistencias)} disabled={asistencias.length === 0}>Descargar informe CSV</Button>
+              </Box>
         </Paper>
       </Box>
     </Box>

@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { formatFullDate, formatTime } from '../../utils/dateUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { calcularHorasTotales } from '../../utils/asistenciasUtils';
+import { exportUserAsCsv } from '../../utils/exportCsv';
 
 
 
@@ -536,6 +537,15 @@ const Administracion = () => {
 
           )}
 
+          <Box sx={{ mt: 2 }}>
+            <Button 
+              variant="outlined" 
+              onClick={() => exportUserAsCsv(editableUser, asistenciasUsuario)} 
+              disabled={loadingAsistencias || asistenciasUsuario.length === 0}
+              >
+                Descargar informe CSV
+            </Button>
+          </Box>
         </Paper>
       </Box>
     )}

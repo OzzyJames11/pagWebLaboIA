@@ -1,85 +1,155 @@
 import React from 'react';
-// import { Image, Container } from '..'; // Importa Container, Typography e Image
-import Grid2 from '@mui/material/Grid2'; // Importa Grid2 correctamente
-import { styled } from '@mui/system'; // Importa styled y shouldForwardProp
-import logoEpn from '../../assets/img/logo-epn.png'; // Importa la imagen del logo
-import { FooterStrings } from '../../assets/Strings'; // Importa los textos del footer
-import styles from '../../assets/css/footer.module.css'; // Importa el archivo CSS desde la ruta correcta
+import Grid2 from '@mui/material/Grid2';
+import { styled } from '@mui/system';
+import { Typography, Link, Grid, Box } from '@mui/material';
+import {
+  Facebook,
+  LinkedIn,
+  YouTube,
+  Instagram,
+  Language,
+  MusicNote,
+} from '@mui/icons-material';
+import strings from '../../assets/Strings/FooterStrings';
+import styles from '../../assets/css/footer.module.css';
 
-import { Typography } from '@mui/material';
+// Mapeo entre el string 'icon' en FooterStrings y el componente MUI Icon
+const ICON_MAP = {
+  facebook: Facebook,
+  linkedin: LinkedIn,
+  youtube: YouTube,
+  instagram: Instagram,
+  tiktok: MusicNote,
+  web: Language,
+};
 
-
-// Crea un componente Grid2 personalizado que no propague la prop `item` al DOM
-const CustomGrid2 = styled(Grid2, {
-    shouldForwardProp: (prop) => prop !== 'item', // Evita que la prop `item` se propague al DOM
-})(({ theme }) => ({
-    // Aquí puedes agregar estilos personalizados si es necesario
+// Componente grid personalizado (solo para responsive text-align)
+const CustomGrid2 = styled(Grid2)(({ theme }) => ({
+  textAlign: 'left',
+  [theme.breakpoints.down('sm')]: {
+    textAlign: 'center',
+  },
 }));
 
 const Footer = () => {
-    const { labelDirection, directionStreet, directionCity, labelPhone, phone, labelMail, mail, footerText } = FooterStrings;
+  const {
+    labelDirection,
+    directionStreet,
+    directionCity,
+    labelPhone,
+    phone,
+    labelMail,
+    mail,
+    labelSocial,
+    socialLinks,
+    footerText,
+    campusName,
+    facultad,
+    numLab,
+  } = strings;
 
-    return (
-        <footer className={styles.footer}> {/* Aplica la clase CSS aquí */}
-            <div className={styles.content}> {/* Contenedor del contenido */}
-                <CustomGrid2 container justifyContent="center" spacing={4}>
-                    {/* Logo */}
-                    <CustomGrid2 item xs={12} sm={12} md={3} className={styles.logo}> {/* Aplica la clase CSS aquí */}
-                        {/* <Image
-                            src={logoEpn} // Ruta de la imagen
-                            alt="Logo EPN" // Texto alternativo
-                            width={174} // Ancho de la imagen
-                            height={106} // Altura de la imagen
-                            style={{ display: 'block' }} // Estilos adicionales
-                        /> */}
-                    </CustomGrid2>
+  // Seccion de redes: dividimos en 2 columnas (3 y 3) visualmente
+  const firstColumn = socialLinks.slice(0, 3);
+  const secondColumn = socialLinks.slice(3, 6);
 
-                    {/* Dirección */}
-                    <CustomGrid2 item xs={12} sm={4} md={3}>
-                        <Typography align="left" variant="subtitle2" gutterBottom>
-                            {labelDirection}
-                        </Typography>
-                        <Typography align="left" variant="body2" gutterBottom>
-                            {directionStreet}
-                        </Typography>
-                        <Typography align="left" variant="body2">
-                            {directionCity}
-                        </Typography>
-                    </CustomGrid2>
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.content}>
+        {/* Container principal: ajusta gap en CSS con --footer-col-gap */}
+        <CustomGrid2
+          container
+          // small spacing porque controlamos gap en CSS/prop gap
+          spacing={0}
+          justifyContent="center"
+          alignItems="flex-start"
+          sx={{ gap: `var(--footer-col-gap, 16px)` }} // valor por defecto 16px
+        >
+          {/* Dirección */}
+          <CustomGrid2 item xs={12} sm={6} md={4}>
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+              {labelDirection}
+            </Typography>
+            <Typography variant="body2">{directionStreet}</Typography>
+            <Typography variant="body2">{campusName}</Typography>
+            <Typography variant="body2">{facultad}</Typography>
+            <Typography variant="body2">{numLab}</Typography>
+          </CustomGrid2>
 
-                    {/* Teléfono */}
-                    <CustomGrid2 item xs={12} sm={4} md={3}>
-                        <Typography variant="subtitle2" gutterBottom>
-                            {labelPhone}
-                        </Typography>
-                        <Typography variant="body2">
-                            {phone}
-                        </Typography>
-                    </CustomGrid2>
+          {/* Contacto */}
+          <CustomGrid2 item xs={12} sm={6} md={4}>
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+              {labelPhone}
+            </Typography>
+            <Typography variant="body2">{phone}</Typography>
 
-                    {/* Correo Electrónico */}
-                    <CustomGrid2 item xs={12} sm={4} md={3}>
-                        <Typography variant="subtitle2" gutterBottom>
-                            {labelMail}
-                        </Typography>
-                        <Typography variant="body2">
-                            {mail}
-                        </Typography>
-                    </CustomGrid2>
-                </CustomGrid2>
-            </div>
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mt: 1 }}>
+              {labelMail}
+            </Typography>
+            <Typography variant="body2">{mail}</Typography>
+          </CustomGrid2>
 
-            {/* Derechos de Autor */}
-            <div className={styles.coppyRight}> {/* Aplica la clase CSS aquí */}
-                <Typography align="center" variant="body2">
-                    {footerText}
-                </Typography>
-                <Typography  align="center" variant="body2">
-                    Powered by OzzyJames11
-                </Typography>
-            </div>
-        </footer>
-    );
+          {/* Redes Sociales (solo iconos, 2 columnas internas) */}
+          <CustomGrid2 item xs={12} sm={12} md={4}>
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+              {labelSocial}
+            </Typography>
+
+            <Grid container spacing={0} className={styles.socialGrid}>
+              {/* Primera columna de 3 */}
+              <Grid item xs={6} className={styles.socialColumn}>
+                {firstColumn.map((s, i) => {
+                  const Icon = ICON_MAP[s.icon] || Language;
+                  return (
+                    <Link
+                      key={i}
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={s.name}
+                      className={styles.socialLink}
+                      aria-label={s.name}
+                    >
+                      <Icon fontSize="small" />
+                    </Link>
+                  );
+                })}
+              </Grid>
+
+              {/* Segunda columna de 3 */}
+              <Grid item xs={6} className={styles.socialColumn}>
+                {secondColumn.map((s, i) => {
+                  const Icon = ICON_MAP[s.icon] || Language;
+                  return (
+                    <Link
+                      key={i}
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={s.name}
+                      className={styles.socialLink}
+                      aria-label={s.name}
+                    >
+                      <Icon fontSize="small" />
+                    </Link>
+                  );
+                })}
+              </Grid>
+            </Grid>
+          </CustomGrid2>
+        </CustomGrid2>
+      </div>
+
+      {/* Derechos de autor */}
+      <div className={styles.coppyRight}>
+        <Typography align="center" variant="body2">
+          {footerText}
+        </Typography>
+        <Typography align="center" variant="body2">
+          Powered by OzzyJames11
+        </Typography>
+      </div>
+    </footer>
+  );
 };
 
 export default Footer;
