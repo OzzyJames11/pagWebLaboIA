@@ -55,6 +55,17 @@ const Administracion = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
+  // === Estado para registro manual ===
+  const [manualAsistencia, setManualAsistencia] = useState({
+    fecha: '',
+    hora_entrada: '',
+    hora_salida: ''
+  });
+  const [loadingManual, setLoadingManual] = useState(false);
+  // Un estado auxiliar para forzar la recarga de la tabla de asistencias
+  const [refreshAsistencias, setRefreshAsistencias] = useState(0);
+
+
   // === Cargar asistencias del usuario seleccionado ===
   useEffect(() => {
     const cargarAsistenciasUsuario = async () => {
@@ -77,7 +88,7 @@ const Administracion = () => {
       }
     };
     cargarAsistenciasUsuario();
-  }, [selectedUserId, filtroAsistencias, fechaInicioAsist, fechaFinAsist]);
+  }, [selectedUserId, filtroAsistencias, fechaInicioAsist, fechaFinAsist, refreshAsistencias]);
   
   // Calcular horas totales
   const { horasEnteras, minutos } = calcularHorasTotales(asistenciasUsuario);
@@ -239,6 +250,56 @@ const Administracion = () => {
       // setMainTab(0); // <-- eliminamos esto
     } catch (err) {
       setError(err.response?.data?.error || 'Error al crear usuario');
+    }
+  };
+
+  const handleAddManualAsistencia = async () => {
+    if (!manualAsistencia.fecha || !manualAsistencia.hora_entrada || !manualAsistencia.hora_salida) {
+      return setError("Todos los campos (fecha, hora de entrada y salida) son obligatorios.");
+    }
+    
+    if (manualAsistencia.hora_entrada >= manualAsistencia.hora_salida) {
+      return setError("La hora de salida debe ser estrictamente mayor a la de entrada.");
+    }
+
+    setLoadingManual(true);
+    try {
+      await axios.post(`http://localhost:5000/api/usuarios/${selectedUserId}/asistencia-manual`, manualAsistencia, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      setSuccess('Registro manual agregado exitosamente');
+      setManualAsistencia({ fecha: '', hora_entrada: '', hora_salida: '' }); // Limpiar formulario
+      setRefreshAsistencias(prev => prev + 1); // Forzar recarga de la tabla/gráficos
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al agregar registro manual');
+    } finally {
+      setLoadingManual(false);
+    }
+  };
+
+  const handleDeleteAsistencia = async (idRegistro) => {
+    // Confirmación de seguridad antes de proceder
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este registro de asistencia definitivamente? Esta acción no se puede deshacer.")) {
+      return; // Cancelar operación
+    }
+
+    try {
+      // Llamada al nuevo endpoint del backend
+      await axios.delete(`http://localhost:5000/api/asistencias/${idRegistro}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Notificación de éxito
+      setSuccess('Registro de asistencia eliminado correctamente');
+      
+      // Forzar la recarga de la tabla y los gráficos para reflejar el cambio
+      // Usamos el mismo estado que creamos para el registro manual
+      setRefreshAsistencias(prev => prev + 1); 
+    } catch (err) {
+      // Manejo de errores
+      console.error(err);
+      setError(err.response?.data?.error || 'Error al intentar eliminar el registro de asistencia');
     }
   };
 
@@ -437,6 +498,55 @@ const Administracion = () => {
     </ Paper>
   )}
 
+{/* === REGISTRO MANUAL DE ASISTENCIA (Migración de papel) === */}
+      {editableUser && (
+        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>Registro Manual</Typography>
+          
+          <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap', mt: 3 }}>
+            <TextField
+              label="Fecha del turno"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              value={manualAsistencia.fecha}
+              onChange={(e) => setManualAsistencia({ ...manualAsistencia, fecha: e.target.value })}
+              sx={{ minWidth: 160 }}
+            />
+            <TextField
+              label="Hora de Entrada"
+              type="time"
+              InputLabelProps={{ shrink: true }}
+              value={manualAsistencia.hora_entrada}
+              onChange={(e) => setManualAsistencia({ ...manualAsistencia, hora_entrada: e.target.value })}
+              sx={{ minWidth: 140 }}
+            />
+            <TextField
+              label="Hora de Salida"
+              type="time"
+              InputLabelProps={{ shrink: true }}
+              value={manualAsistencia.hora_salida}
+              onChange={(e) => setManualAsistencia({ ...manualAsistencia, hora_salida: e.target.value })}
+              sx={{ minWidth: 140 }}
+            />
+            
+            <Button
+              variant="contained"
+              onClick={handleAddManualAsistencia}
+              disabled={loadingManual}
+              sx={{ 
+                ml: 'auto', // Esto empuja el botón mágicamente a la derecha
+                backgroundColor: '#9B2EF4', 
+                '&:hover': { backgroundColor: '#8604f7ff' }, 
+                height: '54px',
+                px: 4 // Un poco más de espacio a los lados del texto del botón
+              }}
+            >
+              Guardar Registro
+            </Button>
+          </Box>
+        </Paper>
+      )}
+
     <Paper elevation={3} sx={{ p : 1, pb : 2 }}>
 
     {/* Último ingreso */}
@@ -514,19 +624,36 @@ const Administracion = () => {
                     <TableCell align="center">Hora Entrada</TableCell>
                     <TableCell align="center">Hora Salida</TableCell>
                     <TableCell align="center">Horas trabajadas</TableCell>
+                    <TableCell align="center">Acciones</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {asistenciasUsuario.length > 0 ? asistenciasUsuario.map(reg => (
-                    <TableRow key={reg.id_registro}>
+                    <TableRow key={reg.id_registro} sx={{ 
+                      // Pinta la fila de rojo tenue si no tiene hora de salida (registro pendiente/olvidado)
+                      backgroundColor: !reg.hora_salida ? 'rgba(255, 68, 68, 0.15)' : 'inherit' 
+                    }}
+                    >
                       <TableCell align="center">{formatFullDate(reg.hora_entrada)}</TableCell>
                       <TableCell align="center">{formatTime(reg.hora_entrada)}</TableCell>
                       <TableCell align="center">{reg.hora_salida ? formatTime(reg.hora_salida) : '--'}</TableCell>
                       <TableCell align="center">{reg.hora_salida ? ((new Date(reg.hora_salida)-new Date(reg.hora_entrada))/(1000*60*60)).toFixed(2) : '--'}</TableCell>
+                      <TableCell align="center">
+                      <IconButton 
+                        aria-label="eliminar registro"
+                        onClick={() => handleDeleteAsistencia(reg.id_registro)}
+                        sx={{ 
+                          color: '#ff4444', // Color rojo para advertir peligro
+                          '&:hover': { backgroundColor: 'rgba(255, 68, 68, 0.08)' } // Efecto hover sutil
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={4} align="center">No hay registros</TableCell>
+                      <TableCell colSpan={5} align="center">No hay registros</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

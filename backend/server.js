@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const config = require('./labConfig');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -38,13 +39,20 @@ const authenticateToken = (req, res, next) => {
 };
 
 
-// En tu backend (server.js)
+// ozzyjames11: eliminacion de superadmin
+// const checkAdmin = (req, res, next) => {
+//     if (req.user.rol !== 'administrador' && req.user.rol !== 'superadmin') {
+//       return res.status(403).json({ message: 'Acceso denegado' });
+//     }
+//     next();
+//   };
+
 const checkAdmin = (req, res, next) => {
-    if (req.user.rol !== 'administrador' && req.user.rol !== 'superadmin') {
+    if (req.user.rol !== 'administrador') {
       return res.status(403).json({ message: 'Acceso denegado' });
     }
     next();
-  };
+};
   
   const checkSuperAdmin = (req, res, next) => {
     if (req.user.rol !== 'superadmin') {
@@ -55,6 +63,31 @@ const checkAdmin = (req, res, next) => {
 
   function generarPasswordTemporal() {
   return Math.random().toString(36).slice(-6); // ej: "a9f2kq"
+}
+
+
+// Función para verificar si la hora actual está dentro del horario del laboratorio
+function isWithinWorkingHours(date) {
+  const hour = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const timeString = `${hour}:${minutes}`;
+  return timeString >= config.HORA_APERTURA && timeString <= config.HORA_CIERRE;
+}
+
+// Función para obtener la fecha local exacta (YYYY-MM-DD) sin desfase UTC
+function getLocalDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Función mejorada para saber si un Date ya pasó la hora de cierre de hoy
+function yaPasoHoraCierre(fechaComparar) {
+  const cierreHoy = new Date();
+  const [horas, minutos] = config.HORA_CIERRE.split(':');
+  cierreHoy.setHours(parseInt(horas, 10), parseInt(minutos, 10), 0, 0);
+  return fechaComparar > cierreHoy;
 }
 
 // app.post('/api/login', async (req, res) => {
@@ -101,6 +134,45 @@ const checkAdmin = (req, res, next) => {
 //         res.status(500).json({ message: 'Error en el servidor' });
 //     }
 // });
+// app.post('/api/login', async (req, res) => {
+//   try {
+//     const { id_usuario, password } = req.body;
+//     const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1 AND activo = true', [id_usuario]);
+
+//     if (result.rows.length === 0) return res.status(400).json({ message: 'Credenciales inválidas' });
+//     const user = result.rows[0];
+
+//     // === TEXTO PLANO ===
+//     if (password !== user.password) {
+//       return res.status(400).json({ message: 'Credenciales inválidas' });
+//     }
+
+//     const token = jwt.sign(
+//       { id_usuario: user.id_usuario, rol: user.rol },
+//       process.env.JWT_SECRET || 'mi_super_secreto',
+//       { expiresIn: '24h' }
+//     );
+
+//     res.json({
+//       success: true,
+//       user: {
+//         id_usuario: user.id_usuario,
+//         nombre: user.nombre,
+//         apellido: user.apellido,
+//         email: user.email,
+//         rol: user.rol,
+//         horario: user.horario,
+//         must_change_password: !!user.must_change_password
+//       },
+//       token
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: 'Error en el servidor' });
+//   }
+// });
+
+// implementacion con bcrypt
 app.post('/api/login', async (req, res) => {
   try {
     const { id_usuario, password } = req.body;
@@ -109,8 +181,9 @@ app.post('/api/login', async (req, res) => {
     if (result.rows.length === 0) return res.status(400).json({ message: 'Credenciales inválidas' });
     const user = result.rows[0];
 
-    // === TEXTO PLANO ===
-    if (password !== user.password) {
+    // === VERIFICACIÓN CON BCRYPT ===
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
       return res.status(400).json({ message: 'Credenciales inválidas' });
     }
 
@@ -142,85 +215,226 @@ app.post('/api/login', async (req, res) => {
 
 
 // Registrar asistencia (entrada)
+// app.post('/api/registrar-entrada', authenticateToken, async (req, res) => {
+//     try {
+//       const { id_usuario } = req.user;
+//       const ahora = new Date();
+//       const fecha = ahora.toISOString().split('T')[0];
+      
+//       const resultado = await pool.query(
+//         `INSERT INTO registros_asistencia 
+//          (id_usuario, fecha, hora_entrada, estado) 
+//          VALUES ($1, $2, $3, 'pendiente') 
+//          RETURNING *`,
+//         [id_usuario, fecha, ahora]
+//       );
+      
+//       res.json({
+//         success: true,
+//         registro: resultado.rows[0],
+//         message: 'Ingreso registrado con éxito'
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: 'Error al registrar entrada' });
+//     }
+//   });
+// Registrar asistencia (entrada)
+// Registrar asistencia (entrada)
+// Registrar asistencia (entrada)
+// Registrar asistencia (entrada)
 app.post('/api/registrar-entrada', authenticateToken, async (req, res) => {
-    try {
-      const { id_usuario } = req.user;
-      const ahora = new Date();
-      const fecha = ahora.toISOString().split('T')[0];
-      
-      const resultado = await pool.query(
-        `INSERT INTO registros_asistencia 
-         (id_usuario, fecha, hora_entrada, estado) 
-         VALUES ($1, $2, $3, 'pendiente') 
-         RETURNING *`,
-        [id_usuario, fecha, ahora]
-      );
-      
-      res.json({
-        success: true,
-        registro: resultado.rows[0],
-        message: 'Ingreso registrado con éxito'
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error al registrar entrada' });
-    }
-  });
-  
-// Registrar asistencia (salida)
-app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
-try {
+  try {
     const { id_usuario } = req.user;
     const ahora = new Date();
     
-    // Buscar el registro más reciente sin salida
+    // === CONSTRUCCIÓN DE FECHA Y HORA LOCAL EXACTA A PRUEBA DE FALLOS ===
+    const year = ahora.getFullYear();
+    const month = String(ahora.getMonth() + 1).padStart(2, '0');
+    const day = String(ahora.getDate()).padStart(2, '0');
+    const hours = String(ahora.getHours()).padStart(2, '0');
+    const minutes = String(ahora.getMinutes()).padStart(2, '0');
+    const seconds = String(ahora.getSeconds()).padStart(2, '0');
+    const ms = String(ahora.getMilliseconds()).padStart(3, '0');
+
+    // Ej: "2026-03-05"
+    const fechaLocal = `${year}-${month}-${day}`; 
+    // Ej: "2026-03-05 14:30:15.123"
+    const horaExactaLocal = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${ms}`; 
+    
+    // 1. Validar horario de apertura y cierre
+    if (!isWithinWorkingHours(ahora)) {
+      return res.status(400).json({ message: `El laboratorio opera de ${config.HORA_APERTURA} a ${config.HORA_CIERRE}.` });
+    }
+
+    // 2. Buscar ÚNICAMENTE el último registro
+    const ultimoRegistro = await pool.query(
+      `SELECT id_registro, hora_salida, fecha FROM registros_asistencia 
+       WHERE id_usuario = $1 ORDER BY hora_entrada DESC LIMIT 1`,
+      [id_usuario]
+    );
+
+    if (ultimoRegistro.rows.length > 0) {
+      const registro = ultimoRegistro.rows[0];
+      // Si el último registro NO tiene salida
+      if (registro.hora_salida === null) {
+        const fechaRegistro = new Date(registro.fecha);
+        const hoy = new Date();
+        const esDeHoy = fechaRegistro.getDate() === hoy.getDate() && 
+                        fechaRegistro.getMonth() === hoy.getMonth() && 
+                        fechaRegistro.getFullYear() === hoy.getFullYear();
+        
+        // Si es de hoy y AÚN NO es la hora de cierre, está activo, bloqueamos.
+        if (esDeHoy && !yaPasoHoraCierre(ahora)) {
+           return res.status(400).json({ message: 'Ya tienes un turno activo en este momento. Registra tu salida primero.' });
+        }
+      }
+    }
+
+    // 3. Insertar enviando los strings exactos
+    const resultado = await pool.query(
+      `INSERT INTO registros_asistencia (id_usuario, fecha, hora_entrada, estado) 
+       VALUES ($1, $2, $3, 'pendiente') RETURNING *`,
+      [id_usuario, fechaLocal, horaExactaLocal]
+    );
+    
+    res.json({ success: true, registro: resultado.rows[0], message: 'Ingreso registrado con éxito' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al registrar entrada' });
+  }
+});
+
+  
+// Registrar asistencia (salida)
+// app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
+// try {
+//     const { id_usuario } = req.user;
+//     const ahora = new Date();
+    
+//     // Buscar el registro más reciente sin salida
+//     const registro = await pool.query(
+//     `SELECT * FROM registros_asistencia 
+//         WHERE id_usuario = $1 AND hora_salida IS NULL 
+//         ORDER BY hora_entrada DESC LIMIT 1`,
+//     [id_usuario]
+//     );
+    
+//     if (registro.rows.length === 0) {
+//     return res.status(400).json({ message: 'No hay registro de entrada' });
+//     }
+    
+//     const resultado = await pool.query(
+//     `UPDATE registros_asistencia 
+//         SET hora_salida = $1, estado = 'completo' 
+//         WHERE id_registro = $2 RETURNING *`,
+//     [ahora, registro.rows[0].id_registro]
+//     );
+    
+//     res.json({
+//     success: true,
+//     registro: resultado.rows[0],
+//     message: 'Salida registrada con éxito'
+//     });
+// } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Error al registrar salida' });
+// }
+// });
+// Registrar asistencia (salida)
+// Registrar asistencia (salida)
+app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
+  try {
+    const { id_usuario } = req.user;
+    const ahora = new Date();
+    
+    // 1. Validar horario
+    if (!isWithinWorkingHours(ahora)) {
+      return res.status(400).json({ message: `El laboratorio opera de ${config.HORA_APERTURA} a ${config.HORA_CIERRE}. No se pueden registrar salidas fuera de este horario.` });
+    }
+
+    // Buscar el último registro que no tenga salida
     const registro = await pool.query(
-    `SELECT * FROM registros_asistencia 
-        WHERE id_usuario = $1 AND hora_salida IS NULL 
-        ORDER BY hora_entrada DESC LIMIT 1`,
-    [id_usuario]
+      `SELECT * FROM registros_asistencia 
+       WHERE id_usuario = $1 AND hora_salida IS NULL 
+       ORDER BY hora_entrada DESC LIMIT 1`,
+      [id_usuario]
     );
     
     if (registro.rows.length === 0) {
-    return res.status(400).json({ message: 'No hay registro de entrada' });
+      return res.status(400).json({ message: 'No tienes ninguna entrada activa para registrar salida.' });
     }
-    
+
+    // Verificar que ese registro pertenezca a HOY (para que no cierre un turno de ayer)
+    const fechaEntrada = new Date(registro.rows[0].hora_entrada);
+    if (fechaEntrada.getDate() !== ahora.getDate()) {
+       return res.status(400).json({ message: 'Tu último registro abierto es de un día anterior y ha sido invalidado.' });
+    }
+
+    const diffMs = ahora - fechaEntrada;
+    const diffHoras = diffMs / (1000 * 60 * 60);
+
+    // 2. Penalidad por superar máximo de horas
+    if (diffHoras > config.HORAS_MAXIMAS) {
+      return res.status(400).json({ message: `Has excedido el tiempo máximo permitido (${config.HORAS_MAXIMAS}h). Tu registro ha sido invalidado.` });
+    }
+
+    // Registro normal exitoso
     const resultado = await pool.query(
-    `UPDATE registros_asistencia 
-        SET hora_salida = $1, estado = 'completo' 
-        WHERE id_registro = $2 RETURNING *`,
-    [ahora, registro.rows[0].id_registro]
+      `UPDATE registros_asistencia SET hora_salida = $1, estado = 'completo' WHERE id_registro = $2 RETURNING *`,
+      [ahora, registro.rows[0].id_registro]
     );
     
-    res.json({
-    success: true,
-    registro: resultado.rows[0],
-    message: 'Salida registrada con éxito'
-    });
-} catch (error) {
+    res.json({ success: true, registro: resultado.rows[0], message: 'Salida registrada con éxito' });
+  } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al registrar salida' });
-}
+  }
 });
 
 
+
 // Crear nuevo usuario con generación automática de contraseña
+// app.post('/api/usuarios', authenticateToken, async (req, res) => {
+//   try {
+//     const { id_usuario, nombre, apellido, email, rol, horario } = req.body;
+
+//     // Generar contraseña temporal automáticamente
+//     const password = generarPasswordTemporal();
+
+//     await pool.query(
+//       `INSERT INTO usuarios 
+//        (id_usuario, nombre, apellido, email, rol, horario, password) 
+//        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+//       [id_usuario, nombre, apellido, email, rol, horario, password]
+//     );
+
+//     // Devolver la contraseña generada al frontend
+//     res.json({ success: true, tempPassword: password });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Error al crear usuario' });
+//   }
+// });
+
+// implementacion con hash
+// Crear nuevo usuario (Admin)
 app.post('/api/usuarios', authenticateToken, async (req, res) => {
   try {
     const { id_usuario, nombre, apellido, email, rol, horario } = req.body;
-
-    // Generar contraseña temporal automáticamente
     const password = generarPasswordTemporal();
+    
+    // Hashear la contraseña temporal antes de guardar
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     await pool.query(
-      `INSERT INTO usuarios 
-       (id_usuario, nombre, apellido, email, rol, horario, password) 
+      `INSERT INTO usuarios (id_usuario, nombre, apellido, email, rol, horario, password) 
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [id_usuario, nombre, apellido, email, rol, horario, password]
+      [id_usuario, nombre, apellido, email, rol, horario, hashedPassword] // Insertamos el hash
     );
 
-    // Devolver la contraseña generada al frontend
-    res.json({ success: true, tempPassword: password });
+    res.json({ success: true, tempPassword: password }); // Devolvemos el texto plano a la pantalla
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al crear usuario' });
@@ -228,16 +442,40 @@ app.post('/api/usuarios', authenticateToken, async (req, res) => {
 });
 
 // Registro público de pasantes desde Home (no requiere token)
+// app.post('/api/registro-pasante', async (req, res) => {
+//   try {
+//     const { id_usuario, nombre, apellido, email, horario } = req.body;
+//     const rol = 'pasante';
+//     const password = generarPasswordTemporal();
+
+//     await pool.query(
+//       `INSERT INTO usuarios (id_usuario, nombre, apellido, email, rol, horario, password)
+//        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+//       [id_usuario, nombre, apellido, email, rol, horario, password]
+//     );
+
+//     res.json({ success: true, tempPassword: password });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Error al crear usuario' });
+//   }
+// });
+
+// implementacion con hash
+// Registro público (Home)
 app.post('/api/registro-pasante', async (req, res) => {
   try {
     const { id_usuario, nombre, apellido, email, horario } = req.body;
     const rol = 'pasante';
     const password = generarPasswordTemporal();
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     await pool.query(
       `INSERT INTO usuarios (id_usuario, nombre, apellido, email, rol, horario, password)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [id_usuario, nombre, apellido, email, rol, horario, password]
+      [id_usuario, nombre, apellido, email, rol, horario, hashedPassword]
     );
 
     res.json({ success: true, tempPassword: password });
@@ -304,32 +542,56 @@ app.post('/api/register', async (req, res) => {
 */
 
 // Resetear contraseña y generar una temporal (admin)
+// app.post('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     // Si el rol es admin (no superadmin), solo puede resetear pasantes
+//     if (req.user.rol === 'administrador') {
+//       const r = await pool.query('SELECT rol FROM usuarios WHERE id_usuario = $1', [id]);
+//       if (r.rows[0]?.rol !== 'pasante') {
+//         return res.status(403).json({ error: 'No puedes resetear a este usuario' });
+//       }
+//     }
+
+//     const tempPassword = generarPasswordTemporal();
+
+//     // === TEXTO PLANO ===
+//     await pool.query(
+//       'UPDATE usuarios SET password = $1, must_change_password = true WHERE id_usuario = $2',
+//       [tempPassword, id]
+//     );
+
+//     // === 🔒 FUTURO: HASH ===
+//     // const hashed = await bcrypt.hash(tempPassword, 10);
+//     // await pool.query(
+//     //   'UPDATE usuarios SET password = $1, must_change_password = true WHERE id_usuario = $2',
+//     //   [hashed, id]
+//     // );
+
+//     res.json({ success: true, tempPassword });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: 'Error al resetear contraseña' });
+//   }
+// });
+
+
+//hash
+
+// Resetear contraseña (Admin)
 app.post('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Si el rol es admin (no superadmin), solo puede resetear pasantes
-    if (req.user.rol === 'administrador') {
-      const r = await pool.query('SELECT rol FROM usuarios WHERE id_usuario = $1', [id]);
-      if (r.rows[0]?.rol !== 'pasante') {
-        return res.status(403).json({ error: 'No puedes resetear a este usuario' });
-      }
-    }
-
     const tempPassword = generarPasswordTemporal();
 
-    // === TEXTO PLANO ===
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
     await pool.query(
       'UPDATE usuarios SET password = $1, must_change_password = true WHERE id_usuario = $2',
-      [tempPassword, id]
+      [hashedPassword, id]
     );
-
-    // === 🔒 FUTURO: HASH ===
-    // const hashed = await bcrypt.hash(tempPassword, 10);
-    // await pool.query(
-    //   'UPDATE usuarios SET password = $1, must_change_password = true WHERE id_usuario = $2',
-    //   [hashed, id]
-    // );
 
     res.json({ success: true, tempPassword });
   } catch (err) {
@@ -337,7 +599,78 @@ app.post('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, asyn
     res.status(500).json({ error: 'Error al resetear contraseña' });
   }
 });
+// Cambiar contraseña (Pasante/Admin desde su perfil)
+app.put('/api/usuarios/:id/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
 
+    if (req.user.id_usuario !== id) {
+      return res.status(403).json({ error: 'No tienes permiso' });
+    }
+
+    const result = await pool.query('SELECT password FROM usuarios WHERE id_usuario = $1', [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const user = result.rows[0];
+
+    // Verificar la contraseña actual contra el hash
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ error: 'Contraseña actual incorrecta' });
+    }
+
+    // Hashear la nueva contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    await pool.query(
+      'UPDATE usuarios SET password = $1, must_change_password = false WHERE id_usuario = $2',
+      [hashedNewPassword, id]
+    );
+
+    res.json({ success: true, message: 'Contraseña cambiada' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al cambiar contraseña' });
+  }
+});
+
+
+// Agregar registro de asistencia manual (solo admin)
+app.post('/api/usuarios/:id/asistencia-manual', authenticateToken, checkAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fecha, hora_entrada, hora_salida } = req.body;
+
+    // Verificar que el usuario exista
+    const userCheck = await pool.query('SELECT 1 FROM usuarios WHERE id_usuario = $1', [id]);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Formatear las horas para insertarlas como timestamp en PostgreSQL
+    const entradaTimestamp = `${fecha} ${hora_entrada}:00`;
+    const salidaTimestamp = `${fecha} ${hora_salida}:00`;
+
+    const resultado = await pool.query(
+      `INSERT INTO registros_asistencia 
+       (id_usuario, fecha, hora_entrada, hora_salida, estado) 
+       VALUES ($1, $2, $3, $4, 'completo') 
+       RETURNING *`,
+      [id, fecha, entradaTimestamp, salidaTimestamp]
+    );
+
+    res.json({
+      success: true,
+      registro: resultado.rows[0],
+      message: 'Registro manual agregado con éxito'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al insertar registro manual' });
+  }
+});
 
 
 // Ruta protegida para obtener datos del usuario actual
@@ -511,6 +844,12 @@ app.get('/api/usuarios/:id/asistencias', authenticateToken, async (req, res) => 
 });
 
 
+// Endpoint para obtener la configuración del laboratorio
+app.get('/api/config', (req, res) => {
+  const config = require('./labConfig');
+  res.json(config);
+});
+
 
 
 // Cambiar contraseña en la interfaz de usuario (pasante)
@@ -656,6 +995,62 @@ app.delete('/api/usuarios/:id', authenticateToken, checkAdmin, async (req, res) 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al eliminar usuario' });
+  }
+});
+
+// Eliminar un registro de asistencia específico (físicamente)
+// Solo accesible para administradores
+app.delete('/api/asistencias/:id_registro', authenticateToken, checkAdmin, async (req, res) => {
+  try {
+    const { id_registro } = req.params;
+
+    // Ejecutar la eliminación física (HARD DELETE)
+    const result = await pool.query(
+      'DELETE FROM registros_asistencia WHERE id_registro = $1 RETURNING *',
+      [id_registro]
+    );
+
+    // Verificar si el registro existía
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Registro de asistencia no encontrado' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Registro eliminado definitivamente',
+      registroEliminado: result.rows[0] // Opcional, por si necesitas info del registro borrado
+    });
+  } catch (error) {
+    console.error('Error al eliminar asistencia:', error);
+    res.status(500).json({ error: 'Error interno del servidor al eliminar el registro' });
+  }
+});
+
+// Endpoint específico para anular una entrada menor a 10 minutos (solo del día actual)
+app.delete('/api/cancelar-entrada', authenticateToken, async (req, res) => {
+  try {
+    const { id_usuario } = req.user;
+    const ahora = new Date();
+    const fechaLocal = getLocalDateString(ahora);
+    
+    // Buscar el registro pendiente CREADO HOY localmente
+    const registro = await pool.query(
+      `SELECT id_registro FROM registros_asistencia 
+       WHERE id_usuario = $1 AND hora_salida IS NULL AND fecha = $2 
+       ORDER BY hora_entrada DESC LIMIT 1`,
+      [id_usuario, fechaLocal]
+    );
+    
+    if (registro.rows.length > 0) {
+      // Eliminar el registro físicamente
+      await pool.query('DELETE FROM registros_asistencia WHERE id_registro = $1', [registro.rows[0].id_registro]);
+      return res.json({ success: true, message: 'Registro anulado correctamente.' });
+    }
+    
+    res.status(400).json({ message: 'No se encontró un registro activo de hoy para anular.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al anular registro' });
   }
 });
 
