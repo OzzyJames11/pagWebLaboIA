@@ -16,53 +16,6 @@ const Register = () => {
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
 
-  // const handleCreateUser = async () => {
-  //   try {
-  //     // Trim de todos los campos de texto
-  //     const codigo = newUser.id_usuario.trim();
-  //     const nombre = newUser.nombre.trim();
-  //     const apellido = newUser.apellido.trim();
-  //     const email = newUser.email.trim();
-  //     const horario = newUser.horario.trim();
-
-  //     // Validación Código Único
-  //     if (!codigo || !/^\d{1,9}$/.test(codigo)) {
-  //       setError('Código Único inválido. Debe contener solo números y máximo 9 dígitos.');
-  //       return;
-  //     }
-
-  //     // Validación Nombre
-  //     if (!nombre || !/^[A-Za-záéíóúÁÉÍÓÚñÑ\s]{1,30}$/.test(nombre)) {
-  //       setError('Nombre inválido. Solo letras y máximo 30 caracteres.');
-  //       return;
-  //     }
-
-  //     // Validación Apellido
-  //     if (!apellido || !/^[A-Za-záéíóúÁÉÍÓÚñÑ\s]{1,30}$/.test(apellido)) {
-  //       setError('Apellido inválido. Solo letras y máximo 30 caracteres.');
-  //       return;
-  //     }
-
-  //     // Validación Email
-  //     if (!email || !/^[A-Za-z0-9._%+-]+@epn\.edu\.ec$/.test(email)) {
-  //       setError('Email inválido. Debe tener el dominio @epn.edu.ec');
-  //       return;
-  //     }
-
-  //     const response = await axios.post('http://localhost:5000/api/registro-pasante', { ...newUser, id_usuario: codigo, nombre, apellido, email, horario }, 
-  //       {headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  //     });
-
-  //     const { tempPassword } = response.data;
-  //     setSuccess(`Usuario creado exitosamente. Contraseña temporal: ${tempPassword}`);
-  //     // setNewUser({ ...newUser, id_usuario: '', nombre: '', apellido: '', email: '' }); // reset campos
-  //     setNewUser({ id_usuario: '', nombre: '', apellido: '', email: '', horario: '', rol: 'pasante'  }); 
-  //   } catch (err) {
-  //     setError(err.response?.data?.error || 'Error al crear usuario');
-  //   }
-  // };
-
-
 const handleCreateUser = async () => {
     try {
       // === Validaciones previas ===
@@ -118,14 +71,6 @@ const handleCreateUser = async () => {
       setError(err.response?.data?.error || 'Error al crear usuario');
     }
   };
-
-
-
-
-
-
-
-
 
   return (
     <Box sx={{ 

@@ -39,13 +39,6 @@ const authenticateToken = (req, res, next) => {
 };
 
 
-// ozzyjames11: eliminacion de superadmin
-// const checkAdmin = (req, res, next) => {
-//     if (req.user.rol !== 'administrador' && req.user.rol !== 'superadmin') {
-//       return res.status(403).json({ message: 'Acceso denegado' });
-//     }
-//     next();
-//   };
 
 const checkAdmin = (req, res, next) => {
     if (req.user.rol !== 'administrador') {
@@ -90,87 +83,6 @@ function yaPasoHoraCierre(fechaComparar) {
   return fechaComparar > cierreHoy;
 }
 
-// app.post('/api/login', async (req, res) => {
-//     try {
-//         const { id_usuario, password } = req.body;
-        
-//         const userResult = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
-//         if (userResult.rows.length === 0) {
-//             return res.status(400).json({ message: 'Credenciales inválidas' });
-//         }
-        
-//         const user = userResult.rows[0];
-        
-//         // Comparación directa (temporal)
-//         if (password.trim() !== user.password.trim()) {
-//             return res.status(400).json({ message: 'Credenciales inválidas' });
-//         }
-        
-//         // Crear token JWT
-//         const token = jwt.sign(
-//             { 
-//                 id_usuario: user.id_usuario,
-//                 rol: user.rol 
-//             },
-//             process.env.JWT_SECRET || 'mi_super_secreto',
-//             { expiresIn: '24h' }
-//         );
-        
-//         // Devolver todos los datos necesarios
-//         res.json({
-//             success: true,
-//             user: {
-//                 id_usuario: user.id_usuario,
-//                 nombre: user.nombre,
-//                 apellido: user.apellido,
-//                 email: user.email,
-//                 rol: user.rol,
-//                 horario: user.horario
-//             },
-//             token
-//         });
-//     } catch (error) {
-//         console.error('Error en login:', error);
-//         res.status(500).json({ message: 'Error en el servidor' });
-//     }
-// });
-// app.post('/api/login', async (req, res) => {
-//   try {
-//     const { id_usuario, password } = req.body;
-//     const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1 AND activo = true', [id_usuario]);
-
-//     if (result.rows.length === 0) return res.status(400).json({ message: 'Credenciales inválidas' });
-//     const user = result.rows[0];
-
-//     // === TEXTO PLANO ===
-//     if (password !== user.password) {
-//       return res.status(400).json({ message: 'Credenciales inválidas' });
-//     }
-
-//     const token = jwt.sign(
-//       { id_usuario: user.id_usuario, rol: user.rol },
-//       process.env.JWT_SECRET || 'mi_super_secreto',
-//       { expiresIn: '24h' }
-//     );
-
-//     res.json({
-//       success: true,
-//       user: {
-//         id_usuario: user.id_usuario,
-//         nombre: user.nombre,
-//         apellido: user.apellido,
-//         email: user.email,
-//         rol: user.rol,
-//         horario: user.horario,
-//         must_change_password: !!user.must_change_password
-//       },
-//       token
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'Error en el servidor' });
-//   }
-// });
 
 // implementacion con bcrypt
 app.post('/api/login', async (req, res) => {
@@ -214,34 +126,6 @@ app.post('/api/login', async (req, res) => {
 
 
 
-// Registrar asistencia (entrada)
-// app.post('/api/registrar-entrada', authenticateToken, async (req, res) => {
-//     try {
-//       const { id_usuario } = req.user;
-//       const ahora = new Date();
-//       const fecha = ahora.toISOString().split('T')[0];
-      
-//       const resultado = await pool.query(
-//         `INSERT INTO registros_asistencia 
-//          (id_usuario, fecha, hora_entrada, estado) 
-//          VALUES ($1, $2, $3, 'pendiente') 
-//          RETURNING *`,
-//         [id_usuario, fecha, ahora]
-//       );
-      
-//       res.json({
-//         success: true,
-//         registro: resultado.rows[0],
-//         message: 'Ingreso registrado con éxito'
-//       });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Error al registrar entrada' });
-//     }
-//   });
-// Registrar asistencia (entrada)
-// Registrar asistencia (entrada)
-// Registrar asistencia (entrada)
 // Registrar asistencia (entrada)
 app.post('/api/registrar-entrada', authenticateToken, async (req, res) => {
   try {
@@ -307,42 +191,6 @@ app.post('/api/registrar-entrada', authenticateToken, async (req, res) => {
 
   
 // Registrar asistencia (salida)
-// app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
-// try {
-//     const { id_usuario } = req.user;
-//     const ahora = new Date();
-    
-//     // Buscar el registro más reciente sin salida
-//     const registro = await pool.query(
-//     `SELECT * FROM registros_asistencia 
-//         WHERE id_usuario = $1 AND hora_salida IS NULL 
-//         ORDER BY hora_entrada DESC LIMIT 1`,
-//     [id_usuario]
-//     );
-    
-//     if (registro.rows.length === 0) {
-//     return res.status(400).json({ message: 'No hay registro de entrada' });
-//     }
-    
-//     const resultado = await pool.query(
-//     `UPDATE registros_asistencia 
-//         SET hora_salida = $1, estado = 'completo' 
-//         WHERE id_registro = $2 RETURNING *`,
-//     [ahora, registro.rows[0].id_registro]
-//     );
-    
-//     res.json({
-//     success: true,
-//     registro: resultado.rows[0],
-//     message: 'Salida registrada con éxito'
-//     });
-// } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Error al registrar salida' });
-// }
-// });
-// Registrar asistencia (salida)
-// Registrar asistencia (salida)
 app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
   try {
     const { id_usuario } = req.user;
@@ -394,30 +242,6 @@ app.post('/api/registrar-salida', authenticateToken, async (req, res) => {
 
 
 
-// Crear nuevo usuario con generación automática de contraseña
-// app.post('/api/usuarios', authenticateToken, async (req, res) => {
-//   try {
-//     const { id_usuario, nombre, apellido, email, rol, horario } = req.body;
-
-//     // Generar contraseña temporal automáticamente
-//     const password = generarPasswordTemporal();
-
-//     await pool.query(
-//       `INSERT INTO usuarios 
-//        (id_usuario, nombre, apellido, email, rol, horario, password) 
-//        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-//       [id_usuario, nombre, apellido, email, rol, horario, password]
-//     );
-
-//     // Devolver la contraseña generada al frontend
-//     res.json({ success: true, tempPassword: password });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: 'Error al crear usuario' });
-//   }
-// });
-
-// implementacion con hash
 // Crear nuevo usuario (Admin)
 app.post('/api/usuarios', authenticateToken, async (req, res) => {
   try {
@@ -441,27 +265,6 @@ app.post('/api/usuarios', authenticateToken, async (req, res) => {
   }
 });
 
-// Registro público de pasantes desde Home (no requiere token)
-// app.post('/api/registro-pasante', async (req, res) => {
-//   try {
-//     const { id_usuario, nombre, apellido, email, horario } = req.body;
-//     const rol = 'pasante';
-//     const password = generarPasswordTemporal();
-
-//     await pool.query(
-//       `INSERT INTO usuarios (id_usuario, nombre, apellido, email, rol, horario, password)
-//        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-//       [id_usuario, nombre, apellido, email, rol, horario, password]
-//     );
-
-//     res.json({ success: true, tempPassword: password });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: 'Error al crear usuario' });
-//   }
-// });
-
-// implementacion con hash
 // Registro público (Home)
 app.post('/api/registro-pasante', async (req, res) => {
   try {
@@ -485,99 +288,6 @@ app.post('/api/registro-pasante', async (req, res) => {
   }
 });
 
-
-
-/*
-
-// Ruta para login de usuarios (VERSIÓN PRODUCCIÓN CON HASH)
-app.post('/api/login', async (req, res) => {
-    try {
-        const { id_usuario, password } = req.body;
-        
-        const userResult = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
-        if (userResult.rows.length === 0) {
-            return res.status(400).json({ message: 'Credenciales inválidas' });
-        }
-        
-        const user = userResult.rows[0];
-        
-        // Comparación segura con bcrypt
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ message: 'Credenciales inválidas' });
-        }
-        
-        // Resto del código igual...
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error en el servidor' });
-    }
-});
-
-// Ruta para registro de usuarios (VERSIÓN PRODUCCIÓN CON HASH)
-app.post('/api/register', async (req, res) => {
-    try {
-        const { id_usuario, nombre, apellido, email, fecha_ingreso, password, rol } = req.body;
-        
-        const userExists = await pool.query('SELECT * FROM usuarios WHERE email = $1 OR id_usuario = $2', [email, id_usuario]);
-        if (userExists.rows.length > 0) {
-            return res.status(400).json({ message: 'El usuario ya existe' });
-        }
-        
-        // Hash de la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        const newUser = await pool.query(
-            'INSERT INTO usuarios (id_usuario, nombre, apellido, email, fecha_ingreso, password, rol) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [id_usuario, nombre, apellido, email, fecha_ingreso, hashedPassword, rol]
-        );
-        
-        // Resto del código igual...
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error en el servidor' });
-    }
-});
-
-*/
-
-// Resetear contraseña y generar una temporal (admin)
-// app.post('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, async (req, res) => {
-//   try {
-//     const { id } = req.params;
-
-//     // Si el rol es admin (no superadmin), solo puede resetear pasantes
-//     if (req.user.rol === 'administrador') {
-//       const r = await pool.query('SELECT rol FROM usuarios WHERE id_usuario = $1', [id]);
-//       if (r.rows[0]?.rol !== 'pasante') {
-//         return res.status(403).json({ error: 'No puedes resetear a este usuario' });
-//       }
-//     }
-
-//     const tempPassword = generarPasswordTemporal();
-
-//     // === TEXTO PLANO ===
-//     await pool.query(
-//       'UPDATE usuarios SET password = $1, must_change_password = true WHERE id_usuario = $2',
-//       [tempPassword, id]
-//     );
-
-//     // === 🔒 FUTURO: HASH ===
-//     // const hashed = await bcrypt.hash(tempPassword, 10);
-//     // await pool.query(
-//     //   'UPDATE usuarios SET password = $1, must_change_password = true WHERE id_usuario = $2',
-//     //   [hashed, id]
-//     // );
-
-//     res.json({ success: true, tempPassword });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Error al resetear contraseña' });
-//   }
-// });
-
-
-//hash
 
 // Resetear contraseña (Admin)
 app.post('/api/usuarios/:id/reset-password', authenticateToken, checkAdmin, async (req, res) => {
@@ -873,11 +583,6 @@ app.put('/api/usuarios/:id/change-password', authenticateToken, async (req, res)
       return res.status(400).json({ error: 'Contraseña actual incorrecta' });
     }
 
-    // === 🔒 FUTURO: HASH ===
-    // const ok = await bcrypt.compare(currentPassword, user.password);
-    // if (!ok) return res.status(400).json({ error: 'Contraseña actual incorrecta' });
-    // const hashed = await bcrypt.hash(newPassword, 10);
-
     await pool.query(
       'UPDATE usuarios SET password = $1, must_change_password = false WHERE id_usuario = $2',
       [newPassword, id] // 🔒 futuro: usar [hashed, id]
@@ -958,26 +663,6 @@ app.put('/api/usuarios/:id', authenticateToken, async (req, res) => {
 });
 
   
-// // Eliminar (desactivar) usuario (solo admin)
-// app.delete('/api/usuarios/:id', authenticateToken, async (req, res) => {
-//   try {
-//     const { id } = req.params;
-
-//     // Solo permitir si el usuario autenticado es admin
-//     if (req.user.rol !== 'administrador') {
-//       return res.status(403).json({ error: 'No tienes permisos para eliminar usuarios' });
-//     }
-
-//     // En lugar de borrar físicamente:
-//     await pool.query('UPDATE usuarios SET activo = false WHERE id_usuario = $1', [id]);
-
-//     res.json({ success: true, message: 'Usuario desactivado correctamente' });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: 'Error al eliminar usuario' });
-//   }
-// });
-
 // Eliminar usuario (soft delete) — solo admins o superadmins
 app.delete('/api/usuarios/:id', authenticateToken, checkAdmin, async (req, res) => {
   try {
@@ -1055,15 +740,6 @@ app.delete('/api/cancelar-entrada', authenticateToken, async (req, res) => {
 });
 
   
-// function generarPasswordTemporal() {
-//     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-//     let result = '';
-//     for (let i = 0; i < 10; i++) {
-//         result += chars.charAt(Math.floor(Math.random() * chars.length));
-//     }
-//     return result;
-// }
-
 // Iniciar el servidor
 pool.connect()
     .then(() => {
